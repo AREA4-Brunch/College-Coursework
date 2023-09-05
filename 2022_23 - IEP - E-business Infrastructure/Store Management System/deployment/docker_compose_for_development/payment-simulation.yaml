@@ -1,0 +1,14 @@
+version: '3.8'
+
+
+networks:
+  ethereum-payment-net:
+
+
+services:
+  ethereum-simulator:
+    image: trufflesuite/ganache-cli:v6.12.2
+    ports:
+      - 8545:8545
+    networks:
+      - ethereum-payment-net
