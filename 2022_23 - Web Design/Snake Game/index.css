@@ -1,0 +1,116 @@
+/* Shared between pages */
+
+html {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+#page-loader-wrapper {
+    top: 0;
+    position: fixed;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    /* background: transparent; */
+    background: whitesmoke;
+    z-index: 1000;
+}
+
+#page-loader-wrapper > div.spinner-border {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.fade-out {
+    opacity: 1;
+    animation: fadeOut 1.67s linear forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-horizontally {
+    display: flex;
+    justify-content: center;
+}
+
+.center-vertically {
+    display: flex;
+    align-items: center;
+}
+
+
+/* End of shared */
+
+
+/* Start Game and Leaderboard */
+
+#start-game {
+    margin-top: 15vh;
+}
+
+#start-game button:hover {
+    background-color: #538de4;
+    color: white;
+    scale: 1.2;
+}
+
+#leaderboard {
+    margin-top: 5px;
+}
+
+#leaderboard a {
+    height: 50px;
+    border: none;
+}
+
+#leaderboard a:hover {
+    background-color: transparent;
+    color: goldenrod;
+    font-size: larger;
+}
+
+
+/* End of Start Game and Leaderboard */
+
+
+.accordion-button:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+#panel {
+    position: relative;
+    width: 100%;
+    padding: 0 6.5vw 0 6.5vw;
+    margin-top: 10vh;
+}
+
+#panel .bullet-points {
+    padding-left: 15px;
+}
+
+#board-size {
+    margin-top: 5px;
+    margin-left: 25px;
+    margin-bottom: 30px;
+    width: 100px;
+}
+
+#game-difficulty {
+    margin-top: 5px;
+    margin-left: 25px;
+}
+
+#game-difficulty label {
+    width: 100px;
+    margin: 3px;
+}

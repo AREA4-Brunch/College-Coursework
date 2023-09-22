@@ -1,0 +1,126 @@
+/* Shared between pages */
+
+html {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+#page-loader-wrapper {
+    top: 0;
+    position: fixed;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    /* background: transparent; */
+    background: whitesmoke;
+    z-index: 1000;
+}
+
+#page-loader-wrapper > div.spinner-border {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.fade-out {
+    opacity: 1;
+    animation: fadeOut 1.67s linear forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-horizontally {
+    display: flex;
+    justify-content: center;
+}
+
+.center-vertically {
+    display: flex;
+    align-items: center;
+}
+
+
+/* End of shared */
+
+
+body {
+    color: #538de4;
+}
+
+
+/* User Last Score */
+
+
+#username {
+    color: goldenrod;
+    height: 35px;
+    font-style: normal;
+}
+
+#username:hover {
+    font-size: 225%;
+}
+
+#last-score {
+    margin-top: 15vh;
+    margin-bottom: 50px;
+    font-style: italic;
+}
+
+#last-score {
+    height: 100px;
+}
+
+#last-user-score:hover {
+    color: goldenrod;
+    font-size: larger;
+}
+
+
+/* End of User Last Score */
+
+
+/* Leaderboard */
+
+
+#leaderboard-heading {
+    height: 20px;
+    margin-bottom: 10px;
+}
+
+#leaderboard-heading:hover {
+    color: goldenrod;
+    /* font-size: 175%; */
+}
+
+#home-page {
+    margin-bottom: 50px;
+    background-color: transparent;
+}
+
+#home-page:hover {
+    scale: 1.1;
+}
+
+#home-page a {
+    border: none;
+}
+
+#leaderboard thead {
+    color: white;
+}
+
+#leaderboard tr:hover {
+    background-color: rgba(241, 182, 35, 0.418);
+}
+
+
+/* End of Leaderboard */
