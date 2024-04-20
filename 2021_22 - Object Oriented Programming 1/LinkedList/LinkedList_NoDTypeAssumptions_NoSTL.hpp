@@ -3,21 +3,21 @@
 
 
 /*
-	Singly Linked List with head and tail, NOT THREAD-SAFE.
+    Singly Linked List with head and tail, NOT THREAD-SAFE.
 
     To SWITCH FROM ERROR CODES TO EXCEPTIONS JUST
     UNCOMMENT the lines with throw, try/catch keywords.
 
-	Given DTYPE stored by the Linked List class should have the following:
-		constructor(const DTYPE &)
+    Given DTYPE stored by the Linked List class should have the following:
+        constructor(const DTYPE &)
 
 
-		//operator== - for searching by value and value based removals
-		//detail::swap (move constructor and move assign. operator)
+        //operator== - for searching by value and value based removals
+        //detail::swap (move constructor and move assign. operator)
         //                    for extractNode
-		//operator< for sorting
-		//std::move - for deleteLinkedListNode
-		//ostream& operator<< for logging the node
+        //operator< for sorting
+        //std::move - for deleteLinkedListNode
+        //ostream& operator<< for logging the node
 */
 
 
@@ -375,10 +375,10 @@ namespace linked_list_on_steroids {
     // deletes given pointer and sets it to nullptr
     //template<typename DTYPE>
     //void deletePtr(DTYPE* &x) {
-    //	if (!x) return;
-    //	//std::cout << "deleting: " << x << std::endl;
-    //	delete x;
-    //	x = nullptr;
+    //    if (!x) return;
+    //    //std::cout << "deleting: " << x << std::endl;
+    //    delete x;
+    //    x = nullptr;
     //}
 
 
@@ -540,14 +540,14 @@ void utils::LinkedList<DTYPE>::clear()
 //{
 //    //auto &self = *this;
 //    //if (!self.head) {  // 0 elements in the list
-//    //	//return os << "Empty List";
-//    //	return os;
+//    //    //return os << "Empty List";
+//    //    return os;
 //    //}
 //    ////os << "Length: " << self.length << std::endl;
 //    //
 //    //typename utils::LinkedList<DTYPE>::Node *cur = self.head;
 //    //for ( ; cur->next != nullptr; cur = cur->next) {
-//    //	os << *cur << ", ";
+//    //    os << *cur << ", ";
 //    //}
 //    //// do not end with ", " so log the tail separately
 //    //return os << *cur;
@@ -570,7 +570,7 @@ utils::LinkedList<DTYPE>& utils::LinkedList<DTYPE>::operator+=(const DTYPE& data
 // returns copy of the idx-th node's data
 //template<typename DTYPE>
 //DTYPE utils::LinkedList<DTYPE>::operator[] (const int idx) const {
-//	return (const_cast<utils::LinkedList<DTYPE>*>(this))->getNodeByIdx(idx)->data;
+//    return (const_cast<utils::LinkedList<DTYPE>*>(this))->getNodeByIdx(idx)->data;
 //}
 
 // returns reference to the idx-th node's data

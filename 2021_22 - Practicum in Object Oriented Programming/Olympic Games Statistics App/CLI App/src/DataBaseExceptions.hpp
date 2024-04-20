@@ -12,38 +12,38 @@ namespace exceptions {
 
 class DataBaseException : public std::exception {
  private:
-	std::string msg = "Data Base Error Ocurred";
+    std::string msg = "Data Base Error Ocurred";
 
  public:
-	DataBaseException() = default;
-	DataBaseException(const std::string &msg) : msg(msg) {}
-	const char* what() const noexcept override {
-		return this->msg.c_str();
-	}
+    DataBaseException() = default;
+    DataBaseException(const std::string &msg) : msg(msg) {}
+    const char* what() const noexcept override {
+        return this->msg.c_str();
+    }
 };
 
 
 class FailedToOpenFile : public std::exception {
  private:
-	std::string msg = "Failed to open file, is the file path correct ?";
+    std::string msg = "Failed to open file, is the file path correct ?";
 
  public:
-	FailedToOpenFile() = default;
-	FailedToOpenFile(const std::string &file_path) {
-		this->msg = "Failed to open `" + file_path
-				  + "`, is the file path correct ? ";
-	}
-	const char* what() const noexcept override {
-		return this->msg.c_str();
-	}
+    FailedToOpenFile() = default;
+    FailedToOpenFile(const std::string &file_path) {
+        this->msg = "Failed to open `" + file_path
+                  + "`, is the file path correct ? ";
+    }
+    const char* what() const noexcept override {
+        return this->msg.c_str();
+    }
 };
 
 
 class LineInvalidFormat : public std::exception {
  public:
-	const char* what() const noexcept override {
-		return "Line does not match expected format.";
-	}
+    const char* what() const noexcept override {
+        return "Line does not match expected format.";
+    }
 };
 
 

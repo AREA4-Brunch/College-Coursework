@@ -18,20 +18,20 @@ namespace hashing {
 // key is passed by reference
 struct HashSharedPtrConstStr
 {
-	std::size_t operator()
-		(const std::shared_ptr<const std::string> &key_str_ptr) const;
+    std::size_t operator()
+        (const std::shared_ptr<const std::string> &key_str_ptr) const;
 };
 
 
 // key is passed by value
 struct HashInt
 {
-	std::size_t operator() (const int id) const;
+    std::size_t operator() (const int id) const;
 };
 //
 //struct HashEventPtr
 //{
-//	std::size_t operator() (const std::shared_ptr<sale::Event> &event_) const;
+//    std::size_t operator() (const std::shared_ptr<sale::Event> &event_) const;
 //};
 //
 
@@ -42,16 +42,16 @@ struct HashInt
 // key is passed by reference
 struct EqualitySharedPtrConstStr
 {
-	bool operator()
-		(const std::shared_ptr<const std::string> &x,
-		 const std::shared_ptr<const std::string> &y) const;
+    bool operator()
+        (const std::shared_ptr<const std::string> &x,
+         const std::shared_ptr<const std::string> &y) const;
 };
 
 
 // key is passed by value
 struct EqualityInt
 {
-	bool operator() (const int x, const int y) const;
+    bool operator() (const int x, const int y) const;
 };
 
 

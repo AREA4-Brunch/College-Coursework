@@ -88,16 +88,16 @@ void searchBestHyperparams(
 
 int main()
 {
-	const std::vector<int> files = {
-		173669, 275487, 1197613, 1549805, 502334, 217684, 1796841, 274708,
-		631252, 148665, 150254, 4784408, 344759, 440109, 4198037, 329673, 28602,
-		144173, 1461469, 187895, 369313, 959307, 1482335, 2772513, 1313997, 254845,
-		486167, 2667146, 264004, 297223, 94694, 1757457, 576203, 8577828, 498382,
-		8478177, 123575, 4062389, 3001419, 196884, 617991, 421056, 3017627, 131936,
-		1152730, 2676649, 656678, 4519834, 201919, 56080, 2142553, 326263, 8172117,
-		2304253, 4761871, 205387, 6148422, 414559, 2893305, 2158562, 465972, 304078,
-		1841018, 1915571
-	};
+    const std::vector<int> files = {
+        173669, 275487, 1197613, 1549805, 502334, 217684, 1796841, 274708,
+        631252, 148665, 150254, 4784408, 344759, 440109, 4198037, 329673, 28602,
+        144173, 1461469, 187895, 369313, 959307, 1482335, 2772513, 1313997, 254845,
+        486167, 2667146, 264004, 297223, 94694, 1757457, 576203, 8577828, 498382,
+        8478177, 123575, 4062389, 3001419, 196884, 617991, 421056, 3017627, 131936,
+        1152730, 2676649, 656678, 4519834, 201919, 56080, 2142553, 326263, 8172117,
+        2304253, 4761871, 205387, 6148422, 414559, 2893305, 2158562, 465972, 304078,
+        1841018, 1915571
+    };
 
     // Search best hyper params and compare results to simulated annealing
 
@@ -136,7 +136,7 @@ int main()
      });
 
 
-	return 0;
+    return 0;
 }
 
 
@@ -230,16 +230,16 @@ void storeHistoriesToFile(
 
 
 int cost(const std::vector<int> &x, const std::vector<int> &files) {
-	constexpr const int c = 1 << 25;
-	int costs[] = { 0, c, c };
+    constexpr const int c = 1 << 25;
+    int costs[] = { 0, c, c };
 
-	for (int i = 0, n = files.size(); i < n; ++i) {
-		if (x[i]) costs[x[i]] -= files[i];
-	}
+    for (int i = 0, n = files.size(); i < n; ++i) {
+        if (x[i]) costs[x[i]] -= files[i];
+    }
 
-	const int f1 = costs[1];
-	const int f2 = costs[2];
-	return f1 >= 0 && f2 >= 0 ? f1 + f2 : c << 1;
+    const int f1 = costs[1];
+    const int f2 = costs[2];
+    return f1 >= 0 && f2 >= 0 ? f1 + f2 : c << 1;
 }
 
 
@@ -254,7 +254,7 @@ void Solve(
     const int k_mutation,
     const std::string &path_costs_histories
 ) {
-	constexpr const int population_size = 20000;
+    constexpr const int population_size = 20000;
     const int num_gens = 50;
 
     int min_cost = std::numeric_limits<int>::max();
@@ -424,14 +424,14 @@ std::vector<std::vector<int>> geneticAlgoSolve(
     // const double mutation_threshold = 7.;
 
 
-	// std::mt19937 &psrng = ::PSRNG;
-	std::mt19937 psrng = initPSRNG(seed);
-	std::uniform_int_distribution<int> random_file_group(0, num_file_groups - 1);
-	std::uniform_real_distribution<> random_prob(0, 1);
+    // std::mt19937 &psrng = ::PSRNG;
+    std::mt19937 psrng = initPSRNG(seed);
+    std::uniform_int_distribution<int> random_file_group(0, num_file_groups - 1);
+    std::uniform_real_distribution<> random_prob(0, 1);
     std::uniform_int_distribution<int> random_unit_el_idx(0, files.size() - 1);
 
-	// create initial population and allocate space for next one
-	std::vector<std::vector<std::vector<int>>> population_cur_next(
+    // create initial population and allocate space for next one
+    std::vector<std::vector<std::vector<int>>> population_cur_next(
         2,
         std::vector<std::vector<int>> (
             population_size, std::vector<int> (files.size())
@@ -454,11 +454,11 @@ std::vector<std::vector<int>> geneticAlgoSolve(
         }
     }
 
-	// elitism selection, also implemnted later when looping in generations
+    // elitism selection, also implemnted later when looping in generations
     std::vector<int> cur_selection_indices(population_size);
     std::iota(cur_selection_indices.begin(), cur_selection_indices.end(), 0);
 
-	auto elitism_selection = [&] (std::vector<int> &costs) {
+    auto elitism_selection = [&] (std::vector<int> &costs) {
         std::sort(
             cur_selection_indices.begin(), cur_selection_indices.end(),
             [&] (const int idx1, const int idx2) {
@@ -466,14 +466,14 @@ std::vector<std::vector<int>> geneticAlgoSolve(
             }
         );
 
-		return units_to_select;
-	};
+        return units_to_select;
+    };
 
-	// decimation selection
+    // decimation selection
     // std::vector<int> cur_selection_indices(population_size);
     // std::iota(cur_selection_indices.begin(), cur_selection_indices.end(), 0);
 
-	auto decimation_selection = [&] (std::vector<int> &costs) {
+    auto decimation_selection = [&] (std::vector<int> &costs) {
         std::sort(
             cur_selection_indices.begin(), cur_selection_indices.end(),
             [&] (const int idx1, const int idx2) {
@@ -481,48 +481,48 @@ std::vector<std::vector<int>> geneticAlgoSolve(
             }
         );
 
-		return units_to_select;
-	};
+        return units_to_select;
+    };
 
-	/// roulet selection
-	std::vector<double> fitness_ratios(population_size);
-	// std::vector<int> cur_selection_indices(units_to_select);
-	auto roulet_selection = [&] (std::vector<int> &costs, const long long total_cost) {
+    /// roulet selection
+    std::vector<double> fitness_ratios(population_size);
+    // std::vector<int> cur_selection_indices(units_to_select);
+    auto roulet_selection = [&] (std::vector<int> &costs, const long long total_cost) {
         // const int units_to_select = (int) (0.7 * population_size);
-		// const int total_cost = std::accumulate(costs.begin(), costs.end(), 0);  // C++20
-		// const int total_cost = sale::accumulate(costs.begin(), costs.end(), 0);
+        // const int total_cost = std::accumulate(costs.begin(), costs.end(), 0);  // C++20
+        // const int total_cost = sale::accumulate(costs.begin(), costs.end(), 0);
 
-		// compute prob for each unit in cur population to be in next one
+        // compute prob for each unit in cur population to be in next one
         fitness_ratios[0] = 1. * costs[0] / total_cost;
-		for (int i = 1; i < population_size; ++i) {
-			fitness_ratios[i] = fitness_ratios[i - 1] + costs[i] / total_cost;
-		}
+        for (int i = 1; i < population_size; ++i) {
+            fitness_ratios[i] = fitness_ratios[i - 1] + costs[i] / total_cost;
+        }
 
         // add units from cur into next population
-		for (int i = 0; i < units_to_select; ++i) {
-			const double selected_unit_prob = random_prob(psrng);
-			auto it = std::upper_bound(fitness_ratios.begin(),
-									   fitness_ratios.end(),
-									   selected_unit_prob);
+        for (int i = 0; i < units_to_select; ++i) {
+            const double selected_unit_prob = random_prob(psrng);
+            auto it = std::upper_bound(fitness_ratios.begin(),
+                                       fitness_ratios.end(),
+                                       selected_unit_prob);
             if (it == fitness_ratios.end()) it--;
-			const int selected_unit_idx = it - fitness_ratios.begin();
-			cur_selection_indices[i] = selected_unit_idx;
-		}
+            const int selected_unit_idx = it - fitness_ratios.begin();
+            cur_selection_indices[i] = selected_unit_idx;
+        }
 
-		return units_to_select;
-	};
+        return units_to_select;
+    };
 
     // tournament selection
     // std::vector<int> cur_selection_indices(units_to_select);
-	auto tournament_selection = [&] (std::vector<int> &costs) {
+    auto tournament_selection = [&] (std::vector<int> &costs) {
         std::vector<bool> is_selected(population_size, false);  // can save space using next population instead
-		std::uniform_int_distribution<int> random_unit(0, population_size - 1);
+        std::uniform_int_distribution<int> random_unit(0, population_size - 1);
 
         for (auto &idx : cur_selection_indices) {
             // choose 2 random indices that have not yet been selected
-			int unit1_idx = random_unit(psrng);
+            int unit1_idx = random_unit(psrng);
             for ( ; is_selected[unit1_idx]; unit1_idx = random_unit(psrng));
-			int unit2_idx = random_unit(psrng);
+            int unit2_idx = random_unit(psrng);
             for ( ;
                 is_selected[unit2_idx] && unit1_idx == unit2_idx;
                 unit1_idx = random_unit(psrng)
@@ -530,20 +530,20 @@ std::vector<std::vector<int>> geneticAlgoSolve(
             idx = costs[unit1_idx] < costs[unit2_idx] ?
                   unit1_idx : unit2_idx;
         }
-		return units_to_select;
-	};
+        return units_to_select;
+    };
 
     /// k-point crossover
-	auto k_point_crossover = [&] (
-		std::vector<std::vector<int>> &cur_population,
-		std::vector<std::vector<int>> &next_population,
-		const int units_selected,
+    auto k_point_crossover = [&] (
+        std::vector<std::vector<int>> &cur_population,
+        std::vector<std::vector<int>> &next_population,
+        const int units_selected,
         const int num_crossovers
-	) {
+    ) {
         // const double crossover_threshold = 0.6;
-		std::uniform_int_distribution<int> random_unit(0, units_selected - 1);
+        std::uniform_int_distribution<int> random_unit(0, units_selected - 1);
 
-		for (int unit_idx = 0; unit_idx < population_size; ++unit_idx) {
+        for (int unit_idx = 0; unit_idx < population_size; ++unit_idx) {
             auto &unit = next_population[unit_idx];
 
             for (int k = 0, prev_idx = -1; k < num_crossovers; ++k) {
@@ -581,8 +581,8 @@ std::vector<std::vector<int>> geneticAlgoSolve(
 
                 prev_idx = crossover_idx;
             }
-		}
-	};
+        }
+    };
 
     auto mutation = [&] (
         std::vector<std::vector<int>> &population,
@@ -604,7 +604,7 @@ std::vector<std::vector<int>> geneticAlgoSolve(
 
     auto min_population_cost = std::numeric_limits<long long>::max();
     auto calc_costs = [&] (
-		std::vector<std::vector<int>> &population,
+        std::vector<std::vector<int>> &population,
         std::vector<int> &costs
     ) -> long long {
         long long total_cost = 0LL;
@@ -636,8 +636,8 @@ std::vector<std::vector<int>> geneticAlgoSolve(
         num_gens,
         std::vector<int> (population_size)
     );
-	int cur_population_idx = 0, next_population_idx = 1;
-	for (int generation = 0; generation < num_gens; ++generation) {
+    int cur_population_idx = 0, next_population_idx = 1;
+    for (int generation = 0; generation < num_gens; ++generation) {
         // std::cout << "Generation: " << generation << std::endl;
 
         const auto total_cost = calc_costs(
@@ -645,14 +645,14 @@ std::vector<std::vector<int>> geneticAlgoSolve(
             costs[generation]
         );
 
-		const int units_selected = elitism_selection(costs[generation]);
+        const int units_selected = elitism_selection(costs[generation]);
 
         k_point_crossover(
-			population_cur_next[cur_population_idx],
-			population_cur_next[next_population_idx],
-			units_selected,
+            population_cur_next[cur_population_idx],
+            population_cur_next[next_population_idx],
+            units_selected,
             k_crossover
-		);
+        );
 
         mutation(population_cur_next[next_population_idx], k_mutation);
 
@@ -665,8 +665,8 @@ std::vector<std::vector<int>> geneticAlgoSolve(
         }
 
         // space for next to write into becomes cur, cur becomes next
-		std::swap(cur_population_idx, next_population_idx);
-	}
+        std::swap(cur_population_idx, next_population_idx);
+    }
 
     return costs;
 }

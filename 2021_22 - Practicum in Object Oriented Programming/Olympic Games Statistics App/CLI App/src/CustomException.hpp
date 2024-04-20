@@ -10,12 +10,12 @@ namespace exceptions {
 
 class CustomException : public std::exception {
  private:
-	std::string msg = "A custom exceptions msg";
+    std::string msg = "A custom exceptions msg";
 
  public:
-	CustomException() = default;
-	CustomException(const std::string &msg) : msg(msg) {}
-	const char* what() const noexcept override { return this->msg.c_str(); }
+    CustomException() = default;
+    CustomException(const std::string &msg) : msg(msg) {}
+    const char* what() const noexcept override { return this->msg.c_str(); }
 };
 
 

@@ -20,30 +20,30 @@ class Menu
 
  public:
 
-	virtual ~Menu() = 0;
+    virtual ~Menu() = 0;
 
 
-	// Functionality of the menu:
+    // Functionality of the menu:
 
-	virtual void selectOption() = 0;
-	virtual void selectOption() const = 0;
+    virtual void selectOption() = 0;
+    virtual void selectOption() const = 0;
 
 
-	// Display of menu:
+    // Display of menu:
 
-	friend std::ostream& operator<< (std::ostream& os, Menu& self) {
-		return self.display(os);
-	}
+    friend std::ostream& operator<< (std::ostream& os, Menu& self) {
+        return self.display(os);
+    }
 
-	friend std::ostream& operator<< (std::ostream& os, const Menu& self) {
-		return self.display(os);
-	}
+    friend std::ostream& operator<< (std::ostream& os, const Menu& self) {
+        return self.display(os);
+    }
 
 
  protected:
 
-	 virtual std::ostream& display(std::ostream &os) = 0;
-	 virtual std::ostream& display(std::ostream &os) const = 0;
+     virtual std::ostream& display(std::ostream &os) = 0;
+     virtual std::ostream& display(std::ostream &os) const = 0;
 
 };
 

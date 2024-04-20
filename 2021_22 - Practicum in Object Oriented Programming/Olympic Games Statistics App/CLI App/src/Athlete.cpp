@@ -6,16 +6,16 @@
 
 
 sale::Athlete::Athlete(const int id)
-	: id(id)
+    : id(id)
 {
 }
 
 sale::Athlete::Athlete(const int id,
-					   std::shared_ptr<sale::Event> event_ptr,
-					   const int oly_games_id)
-	: id(id)
+                       std::shared_ptr<sale::Event> event_ptr,
+                       const int oly_games_id)
+    : id(id)
 {
-	this->addEvent(std::move(event_ptr), oly_games_id);
+    this->addEvent(std::move(event_ptr), oly_games_id);
 }
 
 
@@ -25,52 +25,52 @@ sale::Athlete::Athlete(const int id,
 
 void sale::Athlete::setName(const std::string& name)
 {
-	this->name = name;
+    this->name = name;
 }
 
 void sale::Athlete::setGender(const char gender)
 {
-	this->gender = gender;
+    this->gender = gender;
 }
 
 void sale::Athlete::setAge(const int age)
 {
-	this->age = age;
+    this->age = age;
 }
 
 void sale::Athlete::setHeight(const int height)
 {
-	this->height = height;
+    this->height = height;
 }
 
 void sale::Athlete::setWeight(const float weight)
 {
-	this->weight = weight;
+    this->weight = weight;
 }
 
 const std::string& sale::Athlete::getNameReference() const
 {
-	return this->name;
+    return this->name;
 }
 
 std::string sale::Athlete::getName() const
 {
-	return this->name;
+    return this->name;
 }
 
 int sale::Athlete::getAge() const
 {
-	return this->age;
+    return this->age;
 }
 
 int sale::Athlete::getHeight() const
 {
-	return this->height;
+    return this->height;
 }
 
 float sale::Athlete::getWeight() const
 {
-	return this->weight;
+    return this->weight;
 }
 
 
@@ -80,7 +80,7 @@ float sale::Athlete::getWeight() const
 
 sale::Athlete::TKey sale::Athlete::getKey() const
 {
-	return this->id;
+    return this->id;
 }
 
 
@@ -90,7 +90,7 @@ sale::Athlete::TKey sale::Athlete::getKey() const
 
 bool operator==(const sale::Athlete& x, const sale::Athlete& y)
 {
-	return x.id == y.id;
+    return x.id == y.id;
 }
 
 
@@ -99,7 +99,7 @@ namespace sale{
 
 std::ostream& operator<<(std::ostream& os, const sale::Athlete& self)
 {
-	return os << self.getNameReference() << " (" << self.getKey() << ")";
+    return os << self.getNameReference() << " (" << self.getKey() << ")";
 }
 
 

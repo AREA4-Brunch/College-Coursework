@@ -11,13 +11,13 @@ class HashableData
 
  public:
 
-	using TKey = TKey_;
-	using KeyHashStruct = KeyHashStruct_;
-	using KeyEqStruct = KeyEqStruct_;
+    using TKey = TKey_;
+    using KeyHashStruct = KeyHashStruct_;
+    using KeyEqStruct = KeyEqStruct_;
 
-	virtual ~HashableData() = 0;
-	
-	virtual TKey getKey() const = 0;
+    virtual ~HashableData() = 0;
+    
+    virtual TKey getKey() const = 0;
 
 };
 

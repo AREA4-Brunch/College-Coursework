@@ -21,57 +21,57 @@ namespace sale {
 
 
 class Sport : public HashableData< std::shared_ptr<const std::string>,
-								   sale::hashing::HashSharedPtrConstStr,
-								   sale::hashing::EqualitySharedPtrConstStr >
+                                   sale::hashing::HashSharedPtrConstStr,
+                                   sale::hashing::EqualitySharedPtrConstStr >
 {
-	using events_map_t = std::unordered_multimap<
-							sale::Event::TKey,  // key
-							std::shared_ptr<sale::Event>,  // data
-							sale::Event::KeyHashStruct,
-							sale::Event::KeyEqStruct
-						  >;
+    using events_map_t = std::unordered_multimap<
+                            sale::Event::TKey,  // key
+                            std::shared_ptr<sale::Event>,  // data
+                            sale::Event::KeyHashStruct,
+                            sale::Event::KeyEqStruct
+                          >;
 
  public:
 
-	// Constructors and Destructor:
-	Sport(const std::string &name);
-	Sport(std::shared_ptr<const std::string> name_ptr);
-	~Sport() override = default;
+    // Constructors and Destructor:
+    Sport(const std::string &name);
+    Sport(std::shared_ptr<const std::string> name_ptr);
+    ~Sport() override = default;
 
 
-	// HashableData overrides:
-	TKey getKey() const override;
+    // HashableData overrides:
+    TKey getKey() const override;
 
 
-	// Getters:
-	std::string getName() const;
-	const std::string& getNameReference() const;
-	const events_map_t& getEvents() const;
+    // Getters:
+    std::string getName() const;
+    const std::string& getNameReference() const;
+    const events_map_t& getEvents() const;
 
-	// Managing Events:
-	void addEvent(std::shared_ptr<sale::Event> event_ptr);
-	bool doesEventExist(const sale::Event::TKey &key,
-						const sale::Event::TEventType event_type) const;
-	std::shared_ptr<sale::Event> getEvent(const sale::Event::TKey &key,
-										  const sale::Event::TEventType event_type) const;
+    // Managing Events:
+    void addEvent(std::shared_ptr<sale::Event> event_ptr);
+    bool doesEventExist(const sale::Event::TKey &key,
+                        const sale::Event::TEventType event_type) const;
+    std::shared_ptr<sale::Event> getEvent(const sale::Event::TKey &key,
+                                          const sale::Event::TEventType event_type) const;
 
-	// Operator Overloads:
-	friend bool ::operator== (const Sport &x, const Sport &y);
+    // Operator Overloads:
+    friend bool ::operator== (const Sport &x, const Sport &y);
 
 
   private:
 
-	TKey name;
+    TKey name;
 
-	// map of events
-	std::unique_ptr<
-		std::unordered_multimap<
-			sale::Event::TKey,  // key
-			std::shared_ptr<sale::Event>,  // data
-			sale::Event::KeyHashStruct,
-			sale::Event::KeyEqStruct
-		>
-	> events = nullptr;
+    // map of events
+    std::unique_ptr<
+        std::unordered_multimap<
+            sale::Event::TKey,  // key
+            std::shared_ptr<sale::Event>,  // data
+            sale::Event::KeyHashStruct,
+            sale::Event::KeyEqStruct
+        >
+    > events = nullptr;
 };
 
 

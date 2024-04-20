@@ -2,14 +2,14 @@
 #define LINKED_LIST_HPP
 
 /*
-	Singly Linked List with head and tail, NOT THREAD-SAFE.
-	Given DTYPE stored by the Linked List class should have the following:
-		constructor(const DTYPE &)
-		operator== - for searching by value and value based removals
-		kernel::detail::linked_list::swap (move constructor and move assign. operator)
+    Singly Linked List with head and tail, NOT THREAD-SAFE.
+    Given DTYPE stored by the Linked List class should have the following:
+        constructor(const DTYPE &)
+        operator== - for searching by value and value based removals
+        kernel::detail::linked_list::swap (move constructor and move assign. operator)
                             for extractNode
-		operator< for sorting
-		//ostream& operator<< for logging the node
+        operator< for sorting
+        //ostream& operator<< for logging the node
 */
 
 
@@ -393,10 +393,10 @@ namespace linked_list {
     // deletes given pointer and sets it to nullptr
     //template<typename DTYPE>
     //void deletePtr(DTYPE* &x) {
-    //	if (!x) return;
-    //	//std::cout << "deleting: " << x << std::endl;
-    //	delete x;
-    //	x = nullptr;
+    //    if (!x) return;
+    //    //std::cout << "deleting: " << x << std::endl;
+    //    delete x;
+    //    x = nullptr;
     //}
 
 

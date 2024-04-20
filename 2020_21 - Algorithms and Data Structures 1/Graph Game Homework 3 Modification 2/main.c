@@ -1077,8 +1077,8 @@ void displayIntLinkedList(const LinkedList *list) {
 
 
 /*
-	Tests:
-	
+    Tests:
+    
 8
 6
 8

@@ -28,44 +28,44 @@ class Team final : public Competitor
 
  public:
 
-	Team(std::shared_ptr<sale::Event> event_ptr, const int oly_games_id);
+    Team(std::shared_ptr<sale::Event> event_ptr, const int oly_games_id);
 
-	Team(const int max_num_athletes,
-		 std::shared_ptr<sale::Event> event_ptr,
-		 const int oly_games_id);
+    Team(const int max_num_athletes,
+         std::shared_ptr<sale::Event> event_ptr,
+         const int oly_games_id);
 
-	~Team() override = default;
-
-
-	void addAthlete(sale::Athlete::TKey key);
+    ~Team() override = default;
 
 
-	// Getters:
-	
-	const auto& getAthletesKeys() const;
-
-	// reduces all vectors down to take up only as much
-	// as the elemnts inside them
-	virtual void shrinkToFit() override;
+    void addAthlete(sale::Athlete::TKey key);
 
 
-	// Operator Overloads:
+    // Getters:
+    
+    const auto& getAthletesKeys() const;
 
-	//template<typename TLink>
-	//friend std::ostream& operator<< (std::ostream& os, const sale::Team<TLink>& self) {
+    // reduces all vectors down to take up only as much
+    // as the elemnts inside them
+    virtual void shrinkToFit() override;
 
-	//}
+
+    // Operator Overloads:
+
+    //template<typename TLink>
+    //friend std::ostream& operator<< (std::ostream& os, const sale::Team<TLink>& self) {
+
+    //}
 
 
  private:
 
-	// function connecting Athlete ptrs with keys stored locally
-	static const std::function<
-		std::shared_ptr<sale::Athlete> (sale::Athlete::TKey)
-	> getAthletePtrFunc;
-	
-	// ids of athletes in the team
-	std::vector<std::remove_const<sale::Athlete::TKey>::type> athlete_keys;
+    // function connecting Athlete ptrs with keys stored locally
+    static const std::function<
+        std::shared_ptr<sale::Athlete> (sale::Athlete::TKey)
+    > getAthletePtrFunc;
+    
+    // ids of athletes in the team
+    std::vector<std::remove_const<sale::Athlete::TKey>::type> athlete_keys;
 
 };
 
@@ -94,18 +94,18 @@ sale::Team<TLink>::getAthletePtrFunc = TLink{};
 
 template<typename TLink>
 sale::Team<TLink>::Team(std::shared_ptr<sale::Event> event_ptr,
-						const int oly_games_id)
+                        const int oly_games_id)
 {
-	this->addEvent(std::move(event_ptr), oly_games_id);
+    this->addEvent(std::move(event_ptr), oly_games_id);
 }
 
 template<typename TLink>
 sale::Team<TLink>::Team
-	(const int max_num_athletes, std::shared_ptr<sale::Event> event_ptr,
-	 const int oly_games_id)
-	: Team(std::move(event_ptr), oly_games_id)
+    (const int max_num_athletes, std::shared_ptr<sale::Event> event_ptr,
+     const int oly_games_id)
+    : Team(std::move(event_ptr), oly_games_id)
 {
-	this->athlete_keys.reserve(max_num_athletes);
+    this->athlete_keys.reserve(max_num_athletes);
 }
 
 
@@ -116,20 +116,20 @@ sale::Team<TLink>::Team
 template<typename TLink>
 void sale::Team<TLink>::addAthlete(sale::Athlete::TKey key)
 {
-	this->athlete_keys.push_back(key);
+    this->athlete_keys.push_back(key);
 }
 
 template<typename TLink>
 const auto& sale::Team<TLink>::getAthletesKeys() const
 {
-	return this->athlete_keys;
+    return this->athlete_keys;
 }
 
 template<typename TLink>
 void sale::Team<TLink>::shrinkToFit()
 {
-	sale::Competitor::shrinkToFit();
-	this->athlete_keys.shrink_to_fit();
+    sale::Competitor::shrinkToFit();
+    this->athlete_keys.shrink_to_fit();
 }
 
 

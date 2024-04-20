@@ -10,20 +10,20 @@ namespace exceptions {
 
 class MenuException : public std::exception {
  private:
-	std::string msg = "Main Menu Exception Ocurred";
+    std::string msg = "Main Menu Exception Ocurred";
 
  public:
-	MenuException() = default;
-	MenuException(const std::string &msg) : msg(msg) {}
-	const char* what() const noexcept override { return this->msg.c_str(); }
+    MenuException() = default;
+    MenuException(const std::string &msg) : msg(msg) {}
+    const char* what() const noexcept override { return this->msg.c_str(); }
 };
 
 
 class InvalidOptionOrdinalException : public std::exception {
  public:
-	const char* what() const noexcept override {
-		return "Invalid option ordinal entered.";
-	}
+    const char* what() const noexcept override {
+        return "Invalid option ordinal entered.";
+    }
 };
 
 

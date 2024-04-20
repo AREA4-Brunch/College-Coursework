@@ -36,7 +36,7 @@ sale::App::App()
 
 void sale::App::forEverLoop()
 {
-	while (true) {
+    while (true) {
         try {
             sale::Menu &active_menu = this->fetchActiveMenu();
 
@@ -50,7 +50,7 @@ void sale::App::forEverLoop()
                       << std::endl << err.what()
                       << std::endl << std::endl;
         }
-	}
+    }
 }
 
 

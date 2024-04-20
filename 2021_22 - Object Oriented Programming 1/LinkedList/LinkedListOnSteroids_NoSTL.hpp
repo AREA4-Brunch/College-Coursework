@@ -2,18 +2,18 @@
 #define LINKED_LIST_ON_STEROIDS_HPP
 
 /*
-	Singly Linked List with head and tail, NOT THREAD-SAFE.
+    Singly Linked List with head and tail, NOT THREAD-SAFE.
     
     To SWITCH FROM ERROR CODES TO EXCEPTIONS JUST
     UNCOMMENT the lines with throw, try/catch keywords.
 
-	Given DTYPE stored by the Linked List class should have the following:
-		constructor(const DTYPE &)
-		operator== - for searching by value and value based removals
-		sale::detail::linked_list_on_steroids::swap (move constructor and move assign. operator)
+    Given DTYPE stored by the Linked List class should have the following:
+        constructor(const DTYPE &)
+        operator== - for searching by value and value based removals
+        sale::detail::linked_list_on_steroids::swap (move constructor and move assign. operator)
                             for extractNode
-		operator< for sorting
-		//ostream& operator<< for logging the node
+        operator< for sorting
+        //ostream& operator<< for logging the node
 */
 
 
@@ -371,10 +371,10 @@ namespace linked_list_on_steroids {
     // deletes given pointer and sets it to nullptr
     //template<typename DTYPE>
     //void deletePtr(DTYPE* &x) {
-    //	if (!x) return;
-    //	//std::cout << "deleting: " << x << std::endl;
-    //	delete x;
-    //	x = nullptr;
+    //    if (!x) return;
+    //    //std::cout << "deleting: " << x << std::endl;
+    //    delete x;
+    //    x = nullptr;
     //}
 
 
@@ -548,14 +548,14 @@ void sale::utils::LinkedListOnSteroids<DTYPE>::clear()
 //{
 //    //auto &self = *this;
 //    //if (!self.head) {  // 0 elements in the list
-//    //	//return os << "Empty List";
-//    //	return os;
+//    //    //return os << "Empty List";
+//    //    return os;
 //    //}
 //    ////os << "Length: " << self.length << std::endl;
 //    //
 //    //typename sale::utils::LinkedListOnSteroids<DTYPE>::Node *cur = self.head;
 //    //for ( ; cur->next != nullptr; cur = cur->next) {
-//    //	os << *cur << ", ";
+//    //    os << *cur << ", ";
 //    //}
 //    //// do not end with ", " so log the tail separately
 //    //return os << *cur;
@@ -579,7 +579,7 @@ sale::utils::LinkedListOnSteroids<DTYPE>&
 // returns copy of the idx-th node's data
 //template<typename DTYPE>
 //DTYPE sale::utils::LinkedListOnSteroids<DTYPE>::operator[] (const int idx) const {
-//	return (const_cast<sale::utils::LinkedListOnSteroids<DTYPE>*>(this))->getNodeByIdx(idx)->data;
+//    return (const_cast<sale::utils::LinkedListOnSteroids<DTYPE>*>(this))->getNodeByIdx(idx)->data;
 //}
 
 // returns reference to the idx-th node's data

@@ -169,7 +169,7 @@ void Solve(
     const TCost min_distance = res.first;
     const std::vector<int> &path = res.second;
 
-	printf("Optimal total distance for %d points: %lf\n", num_points, min_distance);
+    printf("Optimal total distance for %d points: %lf\n", num_points, min_distance);
     for (const int idx : path) {
         const std::complex<TCost> &point = *(points_start + idx);
         printf("Point #%d (%.1lf, %.1lf)\n", idx + 1, point.real(), point.imag());

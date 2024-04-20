@@ -18,45 +18,45 @@ namespace sale {
 
 
 class Event : public HashableData< std::shared_ptr<const std::string>,
-								   sale::hashing::HashSharedPtrConstStr,
-							 	   sale::hashing::EqualitySharedPtrConstStr >
+                                   sale::hashing::HashSharedPtrConstStr,
+                                    sale::hashing::EqualitySharedPtrConstStr >
 {
 
  public:
 
-	enum class TEventType : bool { Team, Individual };
+    enum class TEventType : bool { Team, Individual };
 
 
-	// Constructors and Destructor:
+    // Constructors and Destructor:
 
-	Event(const TEventType event_type, const std::string &name, const int oly_games_id=-1);
-	Event(const TEventType event_type,
-		  std::shared_ptr<const std::string> name_ptr, const int oly_games_id=-1);
-	~Event() override = default;
-
-
-	// HashableData overrides:
-
-	TKey getKey() const override;
-
-	
-	// Getters:
-
-	TEventType getType() const;
-	std::string getName() const;
-	const std::string& getNameReference() const;
-	const int getOlympicGamesID() const;
+    Event(const TEventType event_type, const std::string &name, const int oly_games_id=-1);
+    Event(const TEventType event_type,
+          std::shared_ptr<const std::string> name_ptr, const int oly_games_id=-1);
+    ~Event() override = default;
 
 
-	// Operator Overloads:
-	friend bool ::operator== (const Event &x, const Event &y);
+    // HashableData overrides:
+
+    TKey getKey() const override;
+
+    
+    // Getters:
+
+    TEventType getType() const;
+    std::string getName() const;
+    const std::string& getNameReference() const;
+    const int getOlympicGamesID() const;
+
+
+    // Operator Overloads:
+    friend bool ::operator== (const Event &x, const Event &y);
 
 
  private:
-	
-	TEventType event_type = TEventType::Team;
-	TKey name;
-	const int oly_games_id = -1;
+    
+    TEventType event_type = TEventType::Team;
+    TKey name;
+    const int oly_games_id = -1;
 
 };
 
