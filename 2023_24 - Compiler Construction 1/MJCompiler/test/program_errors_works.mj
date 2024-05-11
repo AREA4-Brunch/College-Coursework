@@ -1,0 +1,160 @@
+program Jimmy
+namespace sth {
+
+	int x = *7, y = *8;
+    int x;
+	//int z, m*;
+	//int z*, m;
+	//bool k,m[],n, l, t[];
+
+	class XX {
+	}
+
+	class XX extends ZZ::ZZ
+    {
+        static int x;
+        static int x**;
+        static int x;
+        static int x**
+        iny yy {
+
+		static {
+            x++;
+            foo();
+            //[x,*x] = x.value;
+            if (x + 1 == 2) 
+            	if (x + 2 == 3) x++;
+            else x++;
+            continue;
+            {
+                read(x::field[2]);
+            }
+
+            x = 8;
+            x = *8;
+            y = *7;
+
+            read(x.val);
+            print(x + 1, 7);
+            print(x + 2);
+            read(x.val);
+            for (x = 4; y < 7; x++, y--) {
+            }
+
+            for (x = 7; y < 7; x++, y--) {
+            }
+
+            for (x = 7, y = 8; y < 7; x++, y--) {
+                print(x + 1, 7);
+            }
+            for (x  = 7, y = -8; y < -7; x++, y--)
+                print(x + 1, 7);
+            return 7;
+            //x***;
+            //y***
+            //bool x
+            //{
+        }
+        bool yy;
+        bool yy[];
+        bool yy[], zz[][], xx;
+        int jj;
+        int kk**, {
+	}
+
+	class XX {
+		static {
+        }
+	}
+
+	class XX extends Object
+    {
+		static {
+        }
+	}
+
+    class XX extends Object
+    {
+        static {
+        }
+    }
+
+	{
+        void hello3() {}
+        void hello3(*x) {}
+        void hello3(int x, int *y) {}
+        void hello3(int *x, int *y) {}
+        void hello3(int x[], int y[][]) {}
+    }
+
+}  // namespace sth
+
+const int z = 6, y = 8;
+int z = 6, y* = 8;
+
+{
+
+    void main2(int z, bool y, char s[])
+        int x, y;
+        bool z[];
+    {
+        z = *8;
+        for (x = *7, y = 8; y < 7; x++, y--) {
+            print(x + 1, 7);
+        }
+
+        for (z = *8; z; ) {  // NOT FOUND
+        }
+
+        return;
+    }
+
+    int main(char xx)
+        int x, y;
+        bool z[];
+    {
+        for (x = 7, [j,,**x] = x.z; y < 7; x++, y--) {
+            print(x + 1, 7);
+        }
+        for (x = 7, [j,,**x] = x.z; y < 7; x++, y--) {
+            if (x == 7) print(x + 1, 7);
+            print(x + 1, 7);
+            if (x == 7) print(x + 1, 7);
+            else print(x + 1, 7);
+
+            if (x == *7) print(x + 1, 7);
+            else print(x + 1, 7);
+
+            if (x == 7) {
+                print(x + 1, 7);
+                print(x + 1, 7);
+            }
+            else {
+                print(x + 1, 7);
+                print(x + 1, 7);
+            }
+            
+            if (x == *7 {
+                ) {
+                print(x + 1, 7);
+                print(x + 1, 7);
+            }
+            else {
+                print(x + 1, 7);
+                print(x + 1, 7);
+            }
+        }
+        for ([j,,**x] = x.z; y < 7; x++, y--) {
+            print(x + 1, 7);
+        }
+        return x;
+        //for ([j,,**x] = x.z; ; ) {
+        for (z = 8; ; ) {
+        //for (z = *8; ; ) {
+            print(x);
+        }
+        for ( ; ; ) {
+        }
+    }
+
+}

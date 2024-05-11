@@ -1,0 +1,758 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+
+import rs.ac.bg.etf.pp1.ast.*;
+
+
+parser code {:
+
+	boolean error_detected = false;
+
+	Logger log = Logger.getLogger(getClass());
+
+
+	// redefine error handlers of the parser
+
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSyntax error", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("\nFatal error, parsing cannot continue", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	error_detected = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol) {
+            msg.append (" on line ").append(((Symbol) info).left);
+            msg.append (" symbol value ").append(((Symbol) info).value.toString());
+		}
+        log.error(msg.toString());
+    }
+
+    public void report_info(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" on line ").append(((Symbol) info).left);
+        log.info(msg.toString());
+    }
+
+    public boolean wasErrorDetected() {
+        return this.error_detected;
+    }
+
+:}
+
+scan with {:
+	Symbol cur_symbol = this.getScanner().next_token();
+	if (cur_symbol != null && cur_symbol.value != null) {
+		log.info(cur_symbol.toString() + " " + cur_symbol.value.toString());
+	}
+	return cur_symbol;
+:}
+
+
+// keywords:
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, NEW, PRINT, READ, RETURN, VOID,
+		 EXTENDS, CONTINUE, FOR, STATIC, NAMESPACE;
+
+// types:
+terminal Integer NUMBER;
+terminal String IDENT;
+terminal Character CHAR;
+terminal Boolean BOOL;
+
+// operators:
+terminal PLUS, MINUS, MULTIPLY, DIVIDE, MODULUS, EQUALITY, INEQUALITY, GT, GTE,
+		 LT, LTE, AND, OR, EQUAL, INCR, DECR, SEMI, COLON, COMMA, DOT,
+		 LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE, THICKARROW;
+
+
+// error recovery:
+nonterminal DesignatorStatementAssign;
+nonterminal DesignatorStatementAssignNoSemi;
+nonterminal SafeDesignatorStatementListSemi;
+nonterminal DesignatorStatementListSemi;
+nonterminal ClassDeclSafeVarDecl;
+nonterminal ClassDeclSafeVarDeclList;
+nonterminal SafeStaticVarDeclList;
+nonterminal SafeTypeLBrace;
+//nonterminal SafeVarDeclList;
+
+nonterminal DeclList, MethodDeclList;
+nonterminal NamespaceList;
+//nonterminal StaticVarDeclList;
+nonterminal StaticInitList, OptClassBody;
+nonterminal VarDeclList;
+nonterminal StaticInitializer;
+nonterminal StatementList;
+nonterminal OptDesignatorStatementList, DesignatorStatementList;
+nonterminal Mulop;
+nonterminal Addop;
+nonterminal Assignop;
+nonterminal OrCondTermList;
+nonterminal AndCondFactList;
+nonterminal Label;
+nonterminal NonEmptyStaticInitList;
+nonterminal ClassFieldVarIdentifiersList;
+nonterminal ExprNegation;
+nonterminal IfBegin;
+nonterminal ElseBegin;
+nonterminal ConditionalOR;
+nonterminal ForLoopConditionBegin, ForLoopConditionEnd;
+nonterminal ForLoopPostStmntBegin, ForLoopPostStmntEnd;
+nonterminal ForLoopBodyBegin, ForLoopBodyEnd;
+
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj
+			Program, ProgName,
+			Namespace, NamespaceName,
+			ConstDecl, ConstAssignmentList, ConstLiteral,
+			SafeVarDecl, SafeVarIdentifiersList,
+			VarDecl, VarIdentifiersList,
+			ClassDecl, ClassName,
+			MethodDecl, TypeOrVoidMethodName, FormPars,
+			Designator, DesignatorDetailList,
+			DesignatorStatement, DesignatorDetail,
+				FuncCall, ActPars,
+				Expr, Term, Factor, FactorPars, MulopFactorList,
+			Statement,
+			DesignatorAssign, OptDesignatorList, OptDesignator,
+			CondFact, Relop,
+			AddopTermList,
+			ForLoopStart,
+			SafeIfElseCondition,
+			Condition, CondTerm
+			;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Struct
+			Type
+			;
+
+
+precedence left ELSE;
+
+
+Program ::= (ProgramNamespace) PROG ProgName:p NamespaceList DeclList LBRACE MethodDeclList RBRACE
+		  | (ProgramNoNamespace) PROG ProgName:p DeclList LBRACE MethodDeclList RBRACE
+		  ;
+
+ProgName ::= (ProgName) IDENT:progName;
+
+NamespaceList ::= (NamespaceListMultiple) NamespaceList Namespace
+				| (NamespaceListSingle) Namespace
+				;
+
+Namespace ::= (Namespace) NAMESPACE NamespaceName:identNamespaceName LBRACE DeclList LBRACE MethodDeclList RBRACE RBRACE;
+
+NamespaceName ::= (NamespaceName) IDENT:identNamespaceName;
+
+
+// ===========================================================================
+// Dependencies Group #1
+
+
+SafeVarDecl ::= (SafeVarDeclSuccess) Type:typeName SafeVarIdentifiersList SEMI
+/*
+			  | (SafeVarDeclErrorComma) Type error COMMA:l SafeVarIdentifiersList
+				{:
+					parser.report_error(
+						"SafeVarDeclErrorComma recovery on first comma. Global variable invalid definition on line "
+						+ lleft,
+						null
+					);
+				:}
+			  | (SafeVarDeclErrorSemicolon) error SEMI:l
+				{:
+					parser.report_error(
+						"SafeVarDecl recovery on first semicolon. Global variable invalid definition on line "
+						+ lleft,
+						null
+					);
+				:}
+*/
+			  ;
+
+SafeVarIdentifiersList ::= (SafeMultipleArrayIdentifier) SafeVarIdentifiersList COMMA IDENT:identName LBRACKET RBRACKET
+						| (SafeMultipleVarIdentifier) SafeVarIdentifiersList COMMA IDENT:identName
+						| (SafeSingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET
+						| (SafeSingleVarIdentifier) IDENT:identName
+						| (SafeVarIdentifiersListErrComma) SafeVarIdentifiersList COMMA:l error
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErrComma recovery on first comma. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:}
+						| (SafeVarIdentifiersListErrSemi) error:l
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErrSemi recovery on first semicolon. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:}
+						;
+
+/*
+SafeVarIdentifiersList ::= (SafeMultipleArrayIdentifier) SafeVarIdentifiersList COMMA IDENT LBRACKET RBRACKET
+						| (SafeMultipleVarIdentifier) SafeVarIdentifiersList COMMA IDENT
+						| (SafeSingleArrayIdentifier) IDENT LBRACKET RBRACKET
+						| (SafeSingleVarIdentifier) IDENT
+						| (SafeVarIdentifiersListErrComma) error COMMA:l
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErr recovery on first comma. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:}
+						;
+*/
+
+VarDecl ::= (VarDecl) Type:typeName VarIdentifiersList SEMI;
+
+VarDeclList ::= (HasVarDeclList) VarDeclList VarDecl
+			  | (NoVarDeclList)  // epsilon
+			  ;
+
+/*
+SafeVarDeclList ::= (HasSafeVarDeclList) SafeVarDeclList SafeVarDecl
+				  | (NoSafeVarDeclList)  // epsilon
+				  ;
+*/
+
+VarIdentifiersList ::= (MultipleArrayIdentifier) VarIdentifiersList COMMA IDENT:identName LBRACKET RBRACKET
+					 | (MultipleVarIdentifier) VarIdentifiersList COMMA IDENT:identName
+					 | (SingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET
+					 | (SingleVarIdentifier) IDENT:identName
+					 ;
+
+ClassFieldVarIdentifiersList ::= (ClassMultipleArrayIdentifier) ClassFieldVarIdentifiersList COMMA IDENT:identName LBRACKET RBRACKET
+					 | (ClassMultipleVarIdentifier) ClassFieldVarIdentifiersList COMMA IDENT:identName
+					 | (ClassSingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET
+					 | (ClassSingleVarIdentifier) IDENT:identName
+					 ;
+
+FormPars ::= (SingleFormParsArr) Type:typeName IDENT:identName LBRACKET RBRACKET
+		   | (SingleFormPars) Type:typeName IDENT:identName
+		   | (MultipleFormParsArr) FormPars COMMA Type:typeName IDENT:identName LBRACKET RBRACKET
+		   | (MultipleFormPars) FormPars COMMA Type:typeName IDENT:identName
+		   | (FormParsErrComma) error:l
+				{:
+					parser.report_error(
+						"FormParsErrComma recovery on first comma, or right parantheses. Invalid syntax in formal function paramaters on line "
+						+ lleft,
+						null
+					);
+				:}
+		   ;
+
+ConstDecl ::= (ConstDecl) CONST Type:typeName ConstAssignmentList SEMI;
+
+ConstAssignmentList ::= (MultipleConstAssignments) ConstAssignmentList COMMA IDENT:identName EQUAL ConstLiteral:c
+					  | (SingleConstAssignment) IDENT:identName EQUAL ConstLiteral:c
+					  ;
+
+ConstLiteral ::= (ConstLiteralNumber) NUMBER:value
+			   | (ConstLiteralChar) CHAR:value
+			   | (ConstLiteralBool) BOOL:value
+			   ;
+
+DeclList ::= (DeclListConst) DeclList ConstDecl
+		   //| (DeclListVar) DeclList VarDecl
+		   | (DeclListVar) DeclList SafeVarDecl
+		   | (DeclListClass) DeclList ClassDecl
+		   | (NoDeclList)  // epsilon
+		   ;
+
+Type ::= (NamespacedType) IDENT COLON COLON IDENT:identName
+	   | (RegularType) IDENT:identName;
+
+Label ::= (Label) IDENT;
+
+Assignop ::= (Assignop) EQUAL;
+
+Relop ::= (RelopEq) EQUALITY
+		| (RelopIneq) INEQUALITY
+		| (RelopGt) GT
+		| (RelopGte) GTE
+		| (RelopLt) LT
+		| (RelopLte) LTE
+		;
+
+Addop ::= (AddopPlus) PLUS | (AddopMinus) MINUS;
+
+Mulop ::= (MulopMul) MULTIPLY | (MulopDiv) DIVIDE | (MulopMod) MODULUS;
+
+
+
+// ===========================================================================
+// Dependencies Group #2
+
+// C LBRACE extends
+SafeTypeLBrace ::= (SafeTypeLBraceOk) Type LBRACE
+				 | (SafeTypeLBrace) error LBRACE:l
+					{:
+						parser.report_error(
+							"SafeTypeLBrace recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:}
+				 ;
+
+ClassName ::= (ClassName) IDENT:className;
+
+ClassDecl ::= (ClassDeclExtendsStaticVarDecl)
+				CLASS ClassName:className EXTENDS Type LBRACE SafeStaticVarDeclList StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+			| (ClassDeclExtendsNoStaticVarDecl)
+				CLASS ClassName:className EXTENDS Type LBRACE StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+			| (ClassDeclExtendsStaticVarDeclErr)
+				CLASS ClassName:className EXTENDS error LBRACE:l SafeStaticVarDeclList StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+					{:
+						parser.report_error(
+							"ClassDeclExtendsStaticVarDeclErr recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:}
+			| (ClassDeclExtendsNoStaticVarDeclErr)
+				CLASS ClassName:className EXTENDS error LBRACE:l StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+					{:
+						parser.report_error(
+							"ClassDeclExtendsNoStaticVarDeclErr recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:}
+			| (ClassDeclNoExtendsStaticVarDecl)
+				CLASS ClassName:className LBRACE SafeStaticVarDeclList StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+			| (ClassDeclNoExtendsNoStaticVarDecl)
+				CLASS ClassName:className LBRACE StaticInitList ClassDeclSafeVarDeclList
+				OptClassBody RBRACE
+			;
+
+ClassDeclSafeVarDecl ::= (ClassDeclSafeVarDeclOk) Type ClassFieldVarIdentifiersList SEMI
+						| (ClassDeclSafeVarDeclErr) error SEMI:l 
+							{:
+								parser.report_error(
+									"ClassDeclSafeVarDeclErr recovery on first semi. Invalid syntax in class fields declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+						| (ClassDeclSafeVarDeclErrLBrace) error LBRACE:l 
+							{:
+								parser.report_error(
+									"ClassDeclSafeVarDeclErr recovery on first left braces. Invalid syntax in class fields declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+					   ;
+
+ClassDeclSafeVarDeclList ::= (HasClassDeclSafe) ClassDeclSafeVarDeclList ClassDeclSafeVarDecl
+						   | (NoClassDeclSafe)  // epsilon
+						   ;
+
+SafeStaticVarDeclList ::= (SafeStaticVarDeclListOk) SafeStaticVarDeclList STATIC ClassDeclSafeVarDecl
+						| (SafeStaticVarDeclListSingle) STATIC ClassDeclSafeVarDecl
+/*
+						| (StaticVarDeclListErrSemi) error SEMI:l
+							{:
+								parser.report_error(
+									"StaticVarDeclListErrSemi recovery on first semicolon. Invalid syntax in class static declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+						| (StaticVarDeclListErrLBrace) error LBRACE:l
+							{:
+								parser.report_error(
+									"StaticVarDeclListErrLBrace recovery on first left braces. Invalid syntax in class static declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+*/
+						;
+
+/*
+StaticVarDeclList ::= (StaticVarDeclListMultiple) StaticVarDeclList STATIC VarDecl
+					| (StaticVarDeclListSingle) STATIC VarDecl
+					;
+*/
+
+StaticInitList ::= (HasStaticInitList) NonEmptyStaticInitList
+				 | (NoStaticInitList)  // epsilon
+				 ;
+
+NonEmptyStaticInitList ::= (MultipleStaticInitListMul) NonEmptyStaticInitList StaticInitializer
+						 | (MultipleStaticInitListSingle) StaticInitializer
+						 ;
+
+StaticInitializer ::= (StaticInitializerOk) STATIC LBRACE StatementList RBRACE
+					;
+
+OptClassBody ::= (HasOptClassBody) LBRACE MethodDeclList RBRACE
+			   | (NoOptClassBody)  // epsilon
+			   ;
+
+
+// ===========================================================================
+// Dependencies Group #3
+
+
+DesignatorAssign ::= (DesignatorAssignNormal) Designator:d Assignop Expr:e
+				   | (DesignatorAssignArrUnpack)
+				   		LBRACKET OptDesignatorList:o
+						MULTIPLY Designator:d1 RBRACKET EQUAL Designator:d2
+				   ;
+
+DesignatorStatementAssign ::= (DesignatorStatementAssignOk) DesignatorAssign SEMI
+/*
+							| (ErrSafeDesignatorStatementListSemi10) error Assignop error SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi10 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+
+							| (ErrSafeDesignatorStatementListSemi11) Assignop error SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi11 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+							| (ErrSafeDesignatorStatementListSemi12) error Assignop SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi12 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+*/
+							| (DesignatorStatementAssignErr) error SEMI:l
+								{:
+									parser.report_error(
+										"DesignatorStatementAssignErr recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+							;
+
+DesignatorStatementAssignNoSemi ::= (DesignatorStatementAssignNoSemiOk) DesignatorAssign
+/*
+
+								 | (ErrSafeDesignatorStatementListSemi5) error Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi5 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+
+								 | (ErrSafeDesignatorStatementListSemi6) Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi6 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+								 | (ErrSafeDesignatorStatementListSemi7) error Assignop SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi7 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+*/
+								  | (DesignatorStatementAssignNoSemiErr) error SEMI:l
+									{:
+										parser.report_error(
+											"DesignatorStatementAssignNoSemiErr recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+								  ;
+
+SafeIfElseCondition ::= (SafeIfElseConditionOk) Condition:c RPAREN
+					  | (SafeIfElseConditionErr) error RPAREN:l
+						{:
+							parser.report_error(
+								"StatementIfElseErr recovery on first right parantheses. If condition syntax error on line "
+								+ lleft,
+								null
+							);
+						:}
+					  ;
+
+ForLoopStart ::= (ForLoopStart) FOR;
+ForLoopConditionBegin ::= (ForLoopConditionBegin) /* epsilon */ ;
+ForLoopConditionEnd ::= (ForLoopConditionEnd) /* epsilon */ ;
+ForLoopPostStmntBegin ::= (ForLoopPostStmntBegin) /* epsilon */ ;
+ForLoopPostStmntEnd ::= (ForLoopPostStmntEnd) /* epsilon */ ;
+ForLoopBodyBegin ::= (ForLoopBodyBegin) /* epsilon */ ;
+ForLoopBodyEnd ::= (ForLoopBodyEnd) /* epsilon */ ;
+
+IfBegin ::= (IfBegin) IF LPAREN;
+ElseBegin ::= (ElseBegin) ELSE;
+
+Statement ::= (StatementDesig) DesignatorStatement SEMI
+			| (StatementDesigAssign) DesignatorStatementAssign
+			| (StatementIfElse) IfBegin SafeIfElseCondition:c Statement ElseBegin Statement
+			| (StatementIfNoElse) IfBegin SafeIfElseCondition:c Statement
+			| (StatementBreak) BREAK SEMI
+			| (StatementContinue) CONTINUE SEMI
+			| (StatementReturnExpr) RETURN Expr:e SEMI
+			| (StatementReturnNoExpr) RETURN SEMI
+			| (StatementRead) READ LPAREN Designator:d RPAREN SEMI
+			| (StatementPrintConstArg) PRINT LPAREN Expr:e COMMA NUMBER:width RPAREN SEMI
+			| (StatementPrintNoArg) PRINT LPAREN Expr:e RPAREN SEMI
+
+			| (StatementForHasCond2) ForLoopStart LPAREN SafeDesignatorStatementListSemi
+				ForLoopConditionBegin CondFact ForLoopConditionEnd SEMI
+			  	ForLoopPostStmntBegin OptDesignatorStatementList ForLoopPostStmntEnd RPAREN
+				ForLoopBodyBegin Statement ForLoopBodyEnd
+
+			| (StatementForNoCond1) ForLoopStart LPAREN SafeDesignatorStatementListSemi
+				ForLoopConditionBegin ForLoopConditionEnd SEMI
+			  	ForLoopPostStmntBegin OptDesignatorStatementList ForLoopPostStmntEnd RPAREN
+				ForLoopBodyBegin Statement ForLoopBodyEnd
+
+			| (StatementForHasCond4) ForLoopStart LPAREN SEMI
+				ForLoopConditionBegin CondFact ForLoopConditionEnd SEMI
+			  	ForLoopPostStmntBegin OptDesignatorStatementList ForLoopPostStmntEnd RPAREN
+				ForLoopBodyBegin Statement ForLoopBodyEnd
+
+			| (StatementForNoCond3) ForLoopStart LPAREN SEMI
+				ForLoopConditionBegin ForLoopConditionEnd SEMI
+			  	ForLoopPostStmntBegin OptDesignatorStatementList ForLoopPostStmntEnd RPAREN
+				ForLoopBodyBegin Statement ForLoopBodyEnd
+
+			| (StatementBlock) LBRACE StatementList RBRACE
+			;
+
+StatementList ::= (HasStatementList) StatementList Statement
+				| (NoStatementList)
+				;
+
+OptDesignatorStatementList ::= (HasOptDesignatorStatementList) DesignatorStatementList
+						  | (NoOptDesignatorStatementList)  // epsilon
+						  ;
+
+DesignatorStatementList ::= (MultipleDesignatorStatementList)
+							DesignatorStatementList COMMA DesignatorStatement
+						  | (MultipleDesignatorStatementListAssign)
+							DesignatorStatementList COMMA DesignatorStatementAssignNoSemi
+						  | (SingleDesignatorStatementList) DesignatorStatement
+						  | (SingleDesignatorStatementListAssign) DesignatorStatementAssignNoSemi
+						  ;
+
+SafeDesignatorStatementListSemi ::= (HasSafeDesignatorStatementListSemi) DesignatorStatementListSemi SEMI
+								 | (ErrSafeDesignatorStatementListSemi) Designator Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+/*
+								 | (ErrSafeDesignatorStatementListSemi4) error Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi4 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+
+								 | (ErrSafeDesignatorStatementListSemi3) Designator Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi3 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+								 | (ErrSafeDesignatorStatementListSemi2) error Assignop SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi2 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+*/
+								 ;
+
+DesignatorStatementListSemi ::= (MultipleDesignatorStatementListSemi) 
+								DesignatorStatementListSemi COMMA DesignatorStatement
+							  | (MultipleDesignatorStatementListAssignSemi)
+								DesignatorStatementListSemi COMMA DesignatorAssign
+							  | (SingleDesignatorStatementListSemi) DesignatorStatement
+							  | (SingleDesignatorStatementListAssignSemi) DesignatorAssign
+							  ;
+
+
+// ===========================================================================
+// Dependencies Group #3
+
+
+ActPars ::= (MultipleActPars) ActPars COMMA Expr:e
+		  | (SingleActPar) Expr:e
+		  ;
+
+FactorPars ::= (FactorParsActPars) LPAREN ActPars RPAREN
+			 | (FactorParsNoActPars) LPAREN RPAREN
+			 ;
+
+FuncCall ::= (FuncCall) Designator:d FactorPars;
+
+Factor ::= (FactorDesignatorFactorPars) FuncCall:f
+		 | (FactorDesignatorNoFactorPars) Designator:d
+		 | (FactorNumber) NUMBER:value
+		 | (FactorChar) CHAR:value
+		 | (FactorBool) BOOL:value
+		 | (FactorNewExpr) NEW Type:t LBRACKET Expr:e RBRACKET
+		 | (FactorNewFactorPars) NEW Type:t FactorPars
+		 | (FactorLparen) LPAREN Expr:e RPAREN
+		 ;
+
+MulopFactorList ::= (HasMulopFactorList) MulopFactorList Mulop Factor:f
+				  | (SingleMulopFactor) Mulop Factor:f
+				  ;
+
+Term ::= (TermFactor) Factor:f
+	   | (TermMulopFactorList) Factor:f MulopFactorList:m
+	   ;
+
+AddopTermList ::= (HasAddopTermList) AddopTermList Addop Term:t
+				| (NoAddopTerm)  // epsilon
+				;
+
+Expr ::= (ExprMinus) ExprNegation AddopTermList:a
+	   | (ExprNoMinus) Term:t AddopTermList:a
+	   ;
+
+ExprNegation ::= (ExprNegation) MINUS Term:t;
+
+
+
+// ===========================================================================
+// Dependencies Group #4
+
+/*
+
+DesignatorStatement ::= (DesignatorStatementMisc) Designator DesignatorDetail
+					  | (DesignatorStatementMul) LBRACKET OptDesignatorList
+					  	MULTIPLY Designator RBRACKET EQUAL Designator
+					  ;
+
+DesignatorDetail ::= (DesignatorDetailExpr) Assignop Expr
+				   | (DesignatorDetailFactorPars) FactorPars
+				   | (DesignatorDetailFactorIncr) INCR
+				   | (DesignatorDetailFactorDecr) DECR
+				   ;
+*/
+
+DesignatorStatement ::= (DesignatorStatementFuncCall) FuncCall
+					  | (DesignatorStatementMisc) Designator:d DesignatorDetail
+					  ;
+
+DesignatorDetail ::= (DesignatorDetailFactorIncr) INCR
+				   | (DesignatorDetailFactorDecr) DECR
+				   ;
+
+OptDesignatorList ::= (HasOptDesignatorList) OptDesignatorList OptDesignator:d COMMA
+					| (NoDesignatorList)  // epsilon
+					;
+
+OptDesignator ::= (HasOptDesignator) Designator:d
+				| (NoDesignator)  // epsilon
+				;
+
+Designator ::= (NamespacedDesignator) IDENT:namespaceName COLON COLON IDENT:identName DesignatorDetailList:d
+			 | (NoNamespaceDesignator) IDENT:identName DesignatorDetailList:d
+			 ;
+
+DesignatorDetailList ::= (FirstDesignatorDetailList) DesignatorDetailList DOT IDENT
+					   | (SecondDesignatorDetailList) DesignatorDetailList LBRACKET Expr:e RBRACKET
+					   | (NoDesignatorDetailList)  // epsilon
+					   ;
+
+
+// ===========================================================================
+// Dependencies Group #5
+
+
+Condition ::= (Condition) CondTerm:c OrCondTermList;
+
+ConditionalOR ::= (ConditionalOR) OR;
+
+OrCondTermList ::= (HasOrCondTermList) OrCondTermList ConditionalOR CondTerm
+				 | (NoCondTermList)  // epsilon
+				 ;
+
+CondTerm ::= (CondTerm) CondFact:c AndCondFactList;
+
+AndCondFactList ::= (HasAndCondFactList) AndCondFactList AND CondFact
+				  | (NoAndCondFactList)  // epsilon
+				  ;
+
+CondFact ::= (CondFactExpr) Expr:e
+		   | (CondFactRelop) Expr:e1 Relop Expr:e2
+		   ;
+
+
+// ===========================================================================
+// Dependencies Group #6
+
+
+MethodDeclList ::= (HasMethodDeclList) MethodDeclList MethodDecl
+				 | (NoMethodDeclList)  // epsilon
+				 ;
+
+/*
+MethodDecl ::= (MethodDeclFormPars) TypeOrVoidMethodName IDENT LPAREN FormPars RPAREN
+				SafeVarDeclList LBRACE StatementList RBRACE
+			 | (MethodDeclNoFormPars) TypeOrVoidMethodName IDENT LPAREN RPAREN
+				SafeVarDeclList LBRACE StatementList RBRACE
+			 ;
+*/
+
+MethodDecl ::= (MethodDeclFormPars) TypeOrVoidMethodName:t LPAREN FormPars:f RPAREN
+				VarDeclList LBRACE StatementList RBRACE
+			 | (MethodDeclNoFormPars) TypeOrVoidMethodName:t LPAREN RPAREN
+				VarDeclList LBRACE StatementList RBRACE
+			 ;
+
+TypeOrVoidMethodName ::= (TypeOrVoidMethodNameIsType) Type:typeName IDENT:methodName
+					   | (TypeOrVoidMethodNameIsVoid) VOID:typeName IDENT:methodName
+					   ;

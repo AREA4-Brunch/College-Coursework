@@ -1,0 +1,42 @@
+=====================SYMBOL TABLE DUMP=========================
+Type int: int, -1, -1 
+Type char: char, -1, -1 
+Con eol: char, 10, 0 
+Con null: Class [], 0, 0 
+Meth chr: char, 0, 1 
+   Var i: int, 0, 1 
+
+Meth ord: int, 0, 1 
+   Var ch: char, 0, 1 
+
+Meth len: int, 0, 1 
+   Var arr: Arr of notype, 0, 1 
+
+Type bool: bool, -1, -1 
+Prog test302: notype, 0, 1 
+   Meth Addition::sum: int, 0, 2 
+      Var z: int, 0, 1 
+      Var d: int, 1, 1 
+
+   Meth Addition::inkrement: int, 0, 2 
+      Var a: int, 0, 1 
+      Var inc: int, 1, 1 
+      Var pom: int, 2, 1 
+
+   Var Unpacking::niz: Arr of int, 0, 0 
+   Var Unpacking::niz2: Arr of int, 1, 0 
+   Var Unpacking::niz3: Arr of int, 2, 0 
+   Var Unpacking::a: int, 3, 0 
+   Var Unpacking::b: int, 4, 0 
+   Var i: int, 5, 0 
+   Var ibool: bool, 6, 0 
+   Var niz2: int, 7, 0 
+   Var niz: Arr of int, 8, 0 
+   Var a: int, 9, 0 
+   Var curr: int, 10, 0 
+   Meth verify: bool, 0, 0 
+
+   Meth main: notype, 0, 0 
+
+
+

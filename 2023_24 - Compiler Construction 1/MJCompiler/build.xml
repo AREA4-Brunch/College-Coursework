@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MJCompiler" default="compile" basedir=".">
+
+	<property name="src.dir" location="src/rs/ac/bg/etf/pp1" />
+	<property name="bin.dir" location="bin" />
+	<property name="spec.dir" location="spec" />
+	<property name="lib.dir" location="lib" />
+
+	<target name="delete">
+		<delete>
+			<fileset dir="${src.dir}">
+				<include name="Yylex.java" />
+				<include name="MJParser.java" />
+				<include name="ast/**" />
+				<!-- <exclude name="CodeGenerator.java" />
+				<exclude name="SemanticPass.java" />
+				<exclude name="CounterVisitor.java" />
+				<exclude name="sym.java" />
+				<exclude name="util/Log4JUtils.java" /> -->
+			</fileset>
+		</delete>
+
+		<delete>
+			<fileset dir="${spec.dir}">
+				<include name="mjparser_astbuild.cup" />
+				<!-- <exclude name="mjlexer.flex" />
+				<exclude name="mjparser.cup" /> -->
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="lexerGen" depends="delete">
+		<java jar="${lib.dir}/JFlex.jar" fork="true">
+	    	<arg value="-d" />
+	    	<arg value="./src/rs/ac/bg/etf/pp1" />
+	    	<arg value="spec/mjlexer.flex" />
+		</java>
+	</target>
+
+	<target name="parserGen" depends="lexerGen">
+		<java jar="${lib.dir}/cup_v10k.jar" fork="true">
+			<arg value="-destdir" />
+			<arg value="src/rs/ac/bg/etf/pp1" />
+			<arg value="-ast" />
+			<arg value="src.rs.ac.bg.etf.pp1.ast" />
+			<arg value="-parser" />
+			<arg value="MJParser" />
+			<arg value="-dump_states" />
+			<arg value="-buildtree" />
+			<arg value="spec/mjparser.cup" />
+		</java>
+	</target>
+
+	<target name="repackage" depends="parserGen">
+		<!-- Replaces all of the references to the old package name in files in the "src" directory -->
+		<replace dir="src" value="rs.ac.bg.etf.pp1.ast" token="src.rs.ac.bg.etf.pp1.ast" summary="true" />
+	</target>
+
+	<target name="compile" depends="repackage">
+		<mkdir dir="${bin.dir}" />
+		<javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false">
+			<classpath>
+				<pathelement path="${lib.dir}/JFlex.jar" />
+				<pathelement path="${lib.dir}/cup_v10k.jar" />
+				<pathelement path="${lib.dir}/log4j-1.2.17.jar" />
+				<pathelement path="${lib.dir}/symboltable-1-1.jar" />
+				<pathelement path="${lib.dir}/mj-runtime-1.1.jar" />
+			</classpath>
+		</javac>
+	</target>
+
+</project>

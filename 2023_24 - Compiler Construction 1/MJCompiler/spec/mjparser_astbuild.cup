@@ -1,0 +1,764 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+
+import rs.ac.bg.etf.pp1.ast.*;
+
+
+parser code {:
+
+	boolean error_detected = false;
+
+	Logger log = Logger.getLogger(getClass());
+
+
+	// redefine error handlers of the parser
+
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSyntax error", cur_token);
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("\nFatal error, parsing cannot continue", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	error_detected = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol) {
+            msg.append (" on line ").append(((Symbol) info).left);
+            msg.append (" symbol value ").append(((Symbol) info).value.toString());
+		}
+        log.error(msg.toString());
+    }
+
+    public void report_info(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" on line ").append(((Symbol) info).left);
+        log.info(msg.toString());
+    }
+
+    public boolean wasErrorDetected() {
+        return this.error_detected;
+    }
+
+:}
+
+scan with {:
+	Symbol cur_symbol = this.getScanner().next_token();
+	if (cur_symbol != null && cur_symbol.value != null) {
+		log.info(cur_symbol.toString() + " " + cur_symbol.value.toString());
+	}
+	return cur_symbol;
+:}
+
+
+// keywords:
+terminal PROG, BREAK, CLASS, ELSE, CONST, IF, NEW, PRINT, READ, RETURN, VOID,
+		 EXTENDS, CONTINUE, FOR, STATIC, NAMESPACE;
+
+// types:
+terminal Integer NUMBER;
+terminal String IDENT;
+terminal Character CHAR;
+terminal Boolean BOOL;
+
+// operators:
+terminal PLUS, MINUS, MULTIPLY, DIVIDE, MODULUS, EQUALITY, INEQUALITY, GT, GTE,
+		 LT, LTE, AND, OR, EQUAL, INCR, DECR, SEMI, COLON, COMMA, DOT,
+		 LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE, THICKARROW;
+
+
+// error recovery:
+nonterminal DesignatorStatementAssign DesignatorStatementAssign;
+nonterminal DesignatorStatementAssignNoSemi DesignatorStatementAssignNoSemi;
+nonterminal SafeDesignatorStatementListSemi SafeDesignatorStatementListSemi;
+nonterminal DesignatorStatementListSemi DesignatorStatementListSemi;
+nonterminal ClassDeclSafeVarDecl ClassDeclSafeVarDecl;
+nonterminal ClassDeclSafeVarDeclList ClassDeclSafeVarDeclList;
+nonterminal SafeStaticVarDeclList SafeStaticVarDeclList;
+nonterminal SafeTypeLBrace SafeTypeLBrace;
+//nonterminal SafeVarDeclList;
+
+nonterminal DeclList DeclList;
+nonterminal MethodDeclList MethodDeclList;
+nonterminal NamespaceList NamespaceList;
+//nonterminal StaticVarDeclList;
+nonterminal StaticInitList StaticInitList;
+nonterminal OptClassBody OptClassBody;
+nonterminal VarDeclList VarDeclList;
+nonterminal StaticInitializer StaticInitializer;
+nonterminal StatementList StatementList;
+nonterminal OptDesignatorStatementList OptDesignatorStatementList;
+nonterminal DesignatorStatementList DesignatorStatementList;
+nonterminal Mulop Mulop;
+nonterminal Addop Addop;
+nonterminal Assignop Assignop;
+nonterminal OrCondTermList OrCondTermList;
+nonterminal AndCondFactList AndCondFactList;
+nonterminal Label Label;
+nonterminal NonEmptyStaticInitList NonEmptyStaticInitList;
+nonterminal ClassFieldVarIdentifiersList ClassFieldVarIdentifiersList;
+nonterminal ExprNegation ExprNegation;
+nonterminal IfBegin IfBegin;
+nonterminal ElseBegin ElseBegin;
+nonterminal ConditionalOR ConditionalOR;
+nonterminal ForLoopConditionBegin ForLoopConditionBegin;
+nonterminal ForLoopConditionEnd ForLoopConditionEnd;
+nonterminal ForLoopPostStmntBegin ForLoopPostStmntBegin;
+nonterminal ForLoopPostStmntEnd ForLoopPostStmntEnd;
+nonterminal ForLoopBodyBegin ForLoopBodyBegin;
+nonterminal ForLoopBodyEnd ForLoopBodyEnd;
+
+
+nonterminal rs.etf.pp1.symboltable.concepts.Obj
+			Program, ProgName,
+			Namespace, NamespaceName,
+			ConstDecl, ConstAssignmentList, ConstLiteral,
+			SafeVarDecl, SafeVarIdentifiersList,
+			VarDecl, VarIdentifiersList,
+			ClassDecl, ClassName,
+			MethodDecl, TypeOrVoidMethodName, FormPars,
+			Designator, DesignatorDetailList,
+			DesignatorStatement, DesignatorDetail,
+				FuncCall, ActPars,
+				Expr, Term, Factor, FactorPars, MulopFactorList,
+			Statement,
+			DesignatorAssign, OptDesignatorList, OptDesignator,
+			CondFact, Relop,
+			AddopTermList,
+			ForLoopStart,
+			SafeIfElseCondition,
+			Condition, CondTerm
+			;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Struct
+			Type
+			;
+
+
+precedence left ELSE;
+
+
+Program ::= (ProgramNamespace) PROG ProgName:p NamespaceList:N1 DeclList:D2 LBRACE MethodDeclList:M3 RBRACE {: RESULT=new ProgramNamespace(p, N1, D2, M3); RESULT.setLine(pleft); :}
+		  | (ProgramNoNamespace) PROG ProgName:p DeclList:D1 LBRACE MethodDeclList:M2 RBRACE {: RESULT=new ProgramNoNamespace(p, D1, M2); RESULT.setLine(pleft); :}
+		  ;
+
+ProgName ::= (ProgName) IDENT:progName {: RESULT=new ProgName(progName); RESULT.setLine(progNameleft); :};
+
+NamespaceList ::= (NamespaceListMultiple) NamespaceList:N1 Namespace:N2 {: RESULT=new NamespaceListMultiple(N1, N2); RESULT.setLine(N1left); :}
+				| (NamespaceListSingle) Namespace:N1 {: RESULT=new NamespaceListSingle(N1); RESULT.setLine(N1left); :}
+				;
+
+Namespace ::= (Namespace) NAMESPACE NamespaceName:identNamespaceName LBRACE DeclList:D1 LBRACE MethodDeclList:M2 RBRACE RBRACE {: RESULT=new Namespace(identNamespaceName, D1, M2); RESULT.setLine(identNamespaceNameleft); :};
+
+NamespaceName ::= (NamespaceName) IDENT:identNamespaceName {: RESULT=new NamespaceName(identNamespaceName); RESULT.setLine(identNamespaceNameleft); :};
+
+
+// ===========================================================================
+// Dependencies Group #1
+
+
+SafeVarDecl ::= (SafeVarDeclSuccess) Type:typeName SafeVarIdentifiersList:S1 SEMI {: RESULT=new SafeVarDeclSuccess(typeName, S1); RESULT.setLine(typeNameleft); :}
+/*
+			  | (SafeVarDeclErrorComma) Type error COMMA:l SafeVarIdentifiersList
+				{:
+					parser.report_error(
+						"SafeVarDeclErrorComma recovery on first comma. Global variable invalid definition on line "
+						+ lleft,
+						null
+					);
+				:}
+			  | (SafeVarDeclErrorSemicolon) error SEMI:l
+				{:
+					parser.report_error(
+						"SafeVarDecl recovery on first semicolon. Global variable invalid definition on line "
+						+ lleft,
+						null
+					);
+				:}
+*/
+			  ;
+
+SafeVarIdentifiersList ::= (SafeMultipleArrayIdentifier) SafeVarIdentifiersList:S1 COMMA IDENT:identName LBRACKET RBRACKET {: RESULT=new SafeMultipleArrayIdentifier(S1, identName); RESULT.setLine(S1left); :}
+						| (SafeMultipleVarIdentifier) SafeVarIdentifiersList:S1 COMMA IDENT:identName {: RESULT=new SafeMultipleVarIdentifier(S1, identName); RESULT.setLine(S1left); :}
+						| (SafeSingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET {: RESULT=new SafeSingleArrayIdentifier(identName); RESULT.setLine(identNameleft); :}
+						| (SafeSingleVarIdentifier) IDENT:identName {: RESULT=new SafeSingleVarIdentifier(identName); RESULT.setLine(identNameleft); :}
+						| (SafeVarIdentifiersListErrComma) SafeVarIdentifiersList:S1 COMMA:l error
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErrComma recovery on first comma. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:} {: RESULT=new SafeVarIdentifiersListErrComma(S1); RESULT.setLine(S1left); :}
+						| (SafeVarIdentifiersListErrSemi) error:l
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErrSemi recovery on first semicolon. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:} {: RESULT=new SafeVarIdentifiersListErrSemi(); :}
+						;
+
+/*
+SafeVarIdentifiersList ::= (SafeMultipleArrayIdentifier) SafeVarIdentifiersList COMMA IDENT LBRACKET RBRACKET
+						| (SafeMultipleVarIdentifier) SafeVarIdentifiersList COMMA IDENT
+						| (SafeSingleArrayIdentifier) IDENT LBRACKET RBRACKET
+						| (SafeSingleVarIdentifier) IDENT
+						| (SafeVarIdentifiersListErrComma) error COMMA:l
+							{:
+								parser.report_error(
+									"SafeVarIdentifiersListErr recovery on first comma. Global variable invalid definition on line "
+									+ lleft,
+									null
+								);
+							:}
+						;
+*/
+
+VarDecl ::= (VarDecl) Type:typeName VarIdentifiersList:V1 SEMI {: RESULT=new VarDecl(typeName, V1); RESULT.setLine(typeNameleft); :};
+
+VarDeclList ::= (HasVarDeclList) VarDeclList:V1 VarDecl:V2 {: RESULT=new HasVarDeclList(V1, V2); RESULT.setLine(V1left); :}
+			  | (NoVarDeclList) {: RESULT=new NoVarDeclList(); :}  // epsilon
+			  ;
+
+/*
+SafeVarDeclList ::= (HasSafeVarDeclList) SafeVarDeclList SafeVarDecl
+				  | (NoSafeVarDeclList)  // epsilon
+				  ;
+*/
+
+VarIdentifiersList ::= (MultipleArrayIdentifier) VarIdentifiersList:V1 COMMA IDENT:identName LBRACKET RBRACKET {: RESULT=new MultipleArrayIdentifier(V1, identName); RESULT.setLine(V1left); :}
+					 | (MultipleVarIdentifier) VarIdentifiersList:V1 COMMA IDENT:identName {: RESULT=new MultipleVarIdentifier(V1, identName); RESULT.setLine(V1left); :}
+					 | (SingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET {: RESULT=new SingleArrayIdentifier(identName); RESULT.setLine(identNameleft); :}
+					 | (SingleVarIdentifier) IDENT:identName {: RESULT=new SingleVarIdentifier(identName); RESULT.setLine(identNameleft); :}
+					 ;
+
+ClassFieldVarIdentifiersList ::= (ClassMultipleArrayIdentifier) ClassFieldVarIdentifiersList:C1 COMMA IDENT:identName LBRACKET RBRACKET {: RESULT=new ClassMultipleArrayIdentifier(C1, identName); RESULT.setLine(C1left); :}
+					 | (ClassMultipleVarIdentifier) ClassFieldVarIdentifiersList:C1 COMMA IDENT:identName {: RESULT=new ClassMultipleVarIdentifier(C1, identName); RESULT.setLine(C1left); :}
+					 | (ClassSingleArrayIdentifier) IDENT:identName LBRACKET RBRACKET {: RESULT=new ClassSingleArrayIdentifier(identName); RESULT.setLine(identNameleft); :}
+					 | (ClassSingleVarIdentifier) IDENT:identName {: RESULT=new ClassSingleVarIdentifier(identName); RESULT.setLine(identNameleft); :}
+					 ;
+
+FormPars ::= (SingleFormParsArr) Type:typeName IDENT:identName LBRACKET RBRACKET {: RESULT=new SingleFormParsArr(typeName, identName); RESULT.setLine(typeNameleft); :}
+		   | (SingleFormPars) Type:typeName IDENT:identName {: RESULT=new SingleFormPars(typeName, identName); RESULT.setLine(typeNameleft); :}
+		   | (MultipleFormParsArr) FormPars:F1 COMMA Type:typeName IDENT:identName LBRACKET RBRACKET {: RESULT=new MultipleFormParsArr(F1, typeName, identName); RESULT.setLine(F1left); :}
+		   | (MultipleFormPars) FormPars:F1 COMMA Type:typeName IDENT:identName {: RESULT=new MultipleFormPars(F1, typeName, identName); RESULT.setLine(F1left); :}
+		   | (FormParsErrComma) error:l
+				{:
+					parser.report_error(
+						"FormParsErrComma recovery on first comma, or right parantheses. Invalid syntax in formal function paramaters on line "
+						+ lleft,
+						null
+					);
+				:} {: RESULT=new FormParsErrComma(); :}
+		   ;
+
+ConstDecl ::= (ConstDecl) CONST Type:typeName ConstAssignmentList:C1 SEMI {: RESULT=new ConstDecl(typeName, C1); RESULT.setLine(typeNameleft); :};
+
+ConstAssignmentList ::= (MultipleConstAssignments) ConstAssignmentList:C1 COMMA IDENT:identName EQUAL ConstLiteral:c {: RESULT=new MultipleConstAssignments(C1, identName, c); RESULT.setLine(C1left); :}
+					  | (SingleConstAssignment) IDENT:identName EQUAL ConstLiteral:c {: RESULT=new SingleConstAssignment(identName, c); RESULT.setLine(identNameleft); :}
+					  ;
+
+ConstLiteral ::= (ConstLiteralNumber) NUMBER:value {: RESULT=new ConstLiteralNumber(value); RESULT.setLine(valueleft); :}
+			   | (ConstLiteralChar) CHAR:value {: RESULT=new ConstLiteralChar(value); RESULT.setLine(valueleft); :}
+			   | (ConstLiteralBool) BOOL:value {: RESULT=new ConstLiteralBool(value); RESULT.setLine(valueleft); :}
+			   ;
+
+DeclList ::= (DeclListConst) DeclList:D1 ConstDecl:C2 {: RESULT=new DeclListConst(D1, C2); RESULT.setLine(D1left); :}
+		   //| (DeclListVar) DeclList VarDecl
+		   | (DeclListVar) DeclList:D1 SafeVarDecl:S2 {: RESULT=new DeclListVar(D1, S2); RESULT.setLine(D1left); :}
+		   | (DeclListClass) DeclList:D1 ClassDecl:C2 {: RESULT=new DeclListClass(D1, C2); RESULT.setLine(D1left); :}
+		   | (NoDeclList) {: RESULT=new NoDeclList(); :}  // epsilon
+		   ;
+
+Type ::= (NamespacedType) IDENT:I1 COLON COLON IDENT:identName {: RESULT=new NamespacedType(I1, identName); RESULT.setLine(I1left); :}
+	   | (RegularType) IDENT:identName {: RESULT=new RegularType(identName); RESULT.setLine(identNameleft); :};
+
+Label ::= (Label) IDENT:I1 {: RESULT=new Label(I1); RESULT.setLine(I1left); :};
+
+Assignop ::= (Assignop) EQUAL {: RESULT=new Assignop(); :};
+
+Relop ::= (RelopEq) EQUALITY {: RESULT=new RelopEq(); :}
+		| (RelopIneq) INEQUALITY {: RESULT=new RelopIneq(); :}
+		| (RelopGt) GT {: RESULT=new RelopGt(); :}
+		| (RelopGte) GTE {: RESULT=new RelopGte(); :}
+		| (RelopLt) LT {: RESULT=new RelopLt(); :}
+		| (RelopLte) LTE {: RESULT=new RelopLte(); :}
+		;
+
+Addop ::= (AddopPlus) PLUS {: RESULT=new AddopPlus(); :} | (AddopMinus) MINUS {: RESULT=new AddopMinus(); :};
+
+Mulop ::= (MulopMul) MULTIPLY {: RESULT=new MulopMul(); :} | (MulopDiv) DIVIDE {: RESULT=new MulopDiv(); :} | (MulopMod) MODULUS {: RESULT=new MulopMod(); :};
+
+
+
+// ===========================================================================
+// Dependencies Group #2
+
+// C LBRACE extends
+SafeTypeLBrace ::= (SafeTypeLBraceOk) Type:T1 LBRACE {: RESULT=new SafeTypeLBraceOk(T1); RESULT.setLine(T1left); :}
+				 | (SafeTypeLBrace) error LBRACE:l
+					{:
+						parser.report_error(
+							"SafeTypeLBrace recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:} {: RESULT=new SafeTypeLBrace(); :}
+				 ;
+
+ClassName ::= (ClassName) IDENT:className {: RESULT=new ClassName(className); RESULT.setLine(classNameleft); :};
+
+ClassDecl ::= (ClassDeclExtendsStaticVarDecl)
+				CLASS ClassName:className EXTENDS Type:T1 LBRACE SafeStaticVarDeclList:S2 StaticInitList:S3 ClassDeclSafeVarDeclList:C4
+				OptClassBody:O5 RBRACE {: RESULT=new ClassDeclExtendsStaticVarDecl(className, T1, S2, S3, C4, O5); RESULT.setLine(classNameleft); :}
+			| (ClassDeclExtendsNoStaticVarDecl)
+				CLASS ClassName:className EXTENDS Type:T1 LBRACE StaticInitList:S2 ClassDeclSafeVarDeclList:C3
+				OptClassBody:O4 RBRACE {: RESULT=new ClassDeclExtendsNoStaticVarDecl(className, T1, S2, C3, O4); RESULT.setLine(classNameleft); :}
+			| (ClassDeclExtendsStaticVarDeclErr)
+				CLASS ClassName:className EXTENDS error LBRACE:l SafeStaticVarDeclList:S1 StaticInitList:S2 ClassDeclSafeVarDeclList:C3
+				OptClassBody:O4 RBRACE
+					{:
+						parser.report_error(
+							"ClassDeclExtendsStaticVarDeclErr recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:} {: RESULT=new ClassDeclExtendsStaticVarDeclErr(className, S1, S2, C3, O4); RESULT.setLine(classNameleft); :}
+			| (ClassDeclExtendsNoStaticVarDeclErr)
+				CLASS ClassName:className EXTENDS error LBRACE:l StaticInitList:S1 ClassDeclSafeVarDeclList:C2
+				OptClassBody:O3 RBRACE
+					{:
+						parser.report_error(
+							"ClassDeclExtendsNoStaticVarDeclErr recovery on first left brace. Invalid syntax in extended class on line "
+							+ lleft,
+							null
+						);
+					:} {: RESULT=new ClassDeclExtendsNoStaticVarDeclErr(className, S1, C2, O3); RESULT.setLine(classNameleft); :}
+			| (ClassDeclNoExtendsStaticVarDecl)
+				CLASS ClassName:className LBRACE SafeStaticVarDeclList:S1 StaticInitList:S2 ClassDeclSafeVarDeclList:C3
+				OptClassBody:O4 RBRACE {: RESULT=new ClassDeclNoExtendsStaticVarDecl(className, S1, S2, C3, O4); RESULT.setLine(classNameleft); :}
+			| (ClassDeclNoExtendsNoStaticVarDecl)
+				CLASS ClassName:className LBRACE StaticInitList:S1 ClassDeclSafeVarDeclList:C2
+				OptClassBody:O3 RBRACE {: RESULT=new ClassDeclNoExtendsNoStaticVarDecl(className, S1, C2, O3); RESULT.setLine(classNameleft); :}
+			;
+
+ClassDeclSafeVarDecl ::= (ClassDeclSafeVarDeclOk) Type:T1 ClassFieldVarIdentifiersList:C2 SEMI {: RESULT=new ClassDeclSafeVarDeclOk(T1, C2); RESULT.setLine(T1left); :}
+						| (ClassDeclSafeVarDeclErr) error SEMI:l 
+							{:
+								parser.report_error(
+									"ClassDeclSafeVarDeclErr recovery on first semi. Invalid syntax in class fields declaration on line "
+									+ lleft,
+									null
+								);
+							:} {: RESULT=new ClassDeclSafeVarDeclErr(); :}
+						| (ClassDeclSafeVarDeclErrLBrace) error LBRACE:l 
+							{:
+								parser.report_error(
+									"ClassDeclSafeVarDeclErr recovery on first left braces. Invalid syntax in class fields declaration on line "
+									+ lleft,
+									null
+								);
+							:} {: RESULT=new ClassDeclSafeVarDeclErrLBrace(); :}
+					   ;
+
+ClassDeclSafeVarDeclList ::= (HasClassDeclSafe) ClassDeclSafeVarDeclList:C1 ClassDeclSafeVarDecl:C2 {: RESULT=new HasClassDeclSafe(C1, C2); RESULT.setLine(C1left); :}
+						   | (NoClassDeclSafe) {: RESULT=new NoClassDeclSafe(); :}  // epsilon
+						   ;
+
+SafeStaticVarDeclList ::= (SafeStaticVarDeclListOk) SafeStaticVarDeclList:S1 STATIC ClassDeclSafeVarDecl:C2 {: RESULT=new SafeStaticVarDeclListOk(S1, C2); RESULT.setLine(S1left); :}
+						| (SafeStaticVarDeclListSingle) STATIC ClassDeclSafeVarDecl:C1 {: RESULT=new SafeStaticVarDeclListSingle(C1); RESULT.setLine(C1left); :}
+/*
+						| (StaticVarDeclListErrSemi) error SEMI:l
+							{:
+								parser.report_error(
+									"StaticVarDeclListErrSemi recovery on first semicolon. Invalid syntax in class static declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+						| (StaticVarDeclListErrLBrace) error LBRACE:l
+							{:
+								parser.report_error(
+									"StaticVarDeclListErrLBrace recovery on first left braces. Invalid syntax in class static declaration on line "
+									+ lleft,
+									null
+								);
+							:}
+*/
+						;
+
+/*
+StaticVarDeclList ::= (StaticVarDeclListMultiple) StaticVarDeclList STATIC VarDecl
+					| (StaticVarDeclListSingle) STATIC VarDecl
+					;
+*/
+
+StaticInitList ::= (HasStaticInitList) NonEmptyStaticInitList:N1 {: RESULT=new HasStaticInitList(N1); RESULT.setLine(N1left); :}
+				 | (NoStaticInitList) {: RESULT=new NoStaticInitList(); :}  // epsilon
+				 ;
+
+NonEmptyStaticInitList ::= (MultipleStaticInitListMul) NonEmptyStaticInitList:N1 StaticInitializer:S2 {: RESULT=new MultipleStaticInitListMul(N1, S2); RESULT.setLine(N1left); :}
+						 | (MultipleStaticInitListSingle) StaticInitializer:S1 {: RESULT=new MultipleStaticInitListSingle(S1); RESULT.setLine(S1left); :}
+						 ;
+
+StaticInitializer ::= (StaticInitializerOk) STATIC LBRACE StatementList:S1 RBRACE {: RESULT=new StaticInitializerOk(S1); RESULT.setLine(S1left); :}
+					;
+
+OptClassBody ::= (HasOptClassBody) LBRACE MethodDeclList:M1 RBRACE {: RESULT=new HasOptClassBody(M1); RESULT.setLine(M1left); :}
+			   | (NoOptClassBody) {: RESULT=new NoOptClassBody(); :}  // epsilon
+			   ;
+
+
+// ===========================================================================
+// Dependencies Group #3
+
+
+DesignatorAssign ::= (DesignatorAssignNormal) Designator:d Assignop:A1 Expr:e {: RESULT=new DesignatorAssignNormal(d, A1, e); RESULT.setLine(dleft); :}
+				   | (DesignatorAssignArrUnpack)
+				   		LBRACKET OptDesignatorList:o
+						MULTIPLY Designator:d1 RBRACKET EQUAL Designator:d2 {: RESULT=new DesignatorAssignArrUnpack(o, d1, d2); RESULT.setLine(oleft); :}
+				   ;
+
+DesignatorStatementAssign ::= (DesignatorStatementAssignOk) DesignatorAssign:D1 SEMI {: RESULT=new DesignatorStatementAssignOk(D1); RESULT.setLine(D1left); :}
+/*
+							| (ErrSafeDesignatorStatementListSemi10) error Assignop error SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi10 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+
+							| (ErrSafeDesignatorStatementListSemi11) Assignop error SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi11 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+							| (ErrSafeDesignatorStatementListSemi12) error Assignop SEMI:l
+								{:
+									parser.report_error(
+										"ErrSafeDesignatorStatementListSemi12 recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:}
+*/
+							| (DesignatorStatementAssignErr) error SEMI:l
+								{:
+									parser.report_error(
+										"DesignatorStatementAssignErr recovery on first semicolon. Assignment syntax error on line "
+										+ lleft,
+										null
+									);
+								:} {: RESULT=new DesignatorStatementAssignErr(); :}
+							;
+
+DesignatorStatementAssignNoSemi ::= (DesignatorStatementAssignNoSemiOk) DesignatorAssign:D1 {: RESULT=new DesignatorStatementAssignNoSemiOk(D1); RESULT.setLine(D1left); :}
+/*
+
+								 | (ErrSafeDesignatorStatementListSemi5) error Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi5 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+
+								 | (ErrSafeDesignatorStatementListSemi6) Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi6 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+								 | (ErrSafeDesignatorStatementListSemi7) error Assignop SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi7 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+*/
+								  | (DesignatorStatementAssignNoSemiErr) error SEMI:l
+									{:
+										parser.report_error(
+											"DesignatorStatementAssignNoSemiErr recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:} {: RESULT=new DesignatorStatementAssignNoSemiErr(); :}
+								  ;
+
+SafeIfElseCondition ::= (SafeIfElseConditionOk) Condition:c RPAREN {: RESULT=new SafeIfElseConditionOk(c); RESULT.setLine(cleft); :}
+					  | (SafeIfElseConditionErr) error RPAREN:l
+						{:
+							parser.report_error(
+								"StatementIfElseErr recovery on first right parantheses. If condition syntax error on line "
+								+ lleft,
+								null
+							);
+						:} {: RESULT=new SafeIfElseConditionErr(); :}
+					  ;
+
+ForLoopStart ::= (ForLoopStart) FOR {: RESULT=new ForLoopStart(); :};
+ForLoopConditionBegin ::= (ForLoopConditionBegin) {: RESULT=new ForLoopConditionBegin(); :} /* epsilon */ ;
+ForLoopConditionEnd ::= (ForLoopConditionEnd) {: RESULT=new ForLoopConditionEnd(); :} /* epsilon */ ;
+ForLoopPostStmntBegin ::= (ForLoopPostStmntBegin) {: RESULT=new ForLoopPostStmntBegin(); :} /* epsilon */ ;
+ForLoopPostStmntEnd ::= (ForLoopPostStmntEnd) {: RESULT=new ForLoopPostStmntEnd(); :} /* epsilon */ ;
+ForLoopBodyBegin ::= (ForLoopBodyBegin) {: RESULT=new ForLoopBodyBegin(); :} /* epsilon */ ;
+ForLoopBodyEnd ::= (ForLoopBodyEnd) {: RESULT=new ForLoopBodyEnd(); :} /* epsilon */ ;
+
+IfBegin ::= (IfBegin) IF LPAREN {: RESULT=new IfBegin(); :};
+ElseBegin ::= (ElseBegin) ELSE {: RESULT=new ElseBegin(); :};
+
+Statement ::= (StatementDesig) DesignatorStatement:D1 SEMI {: RESULT=new StatementDesig(D1); RESULT.setLine(D1left); :}
+			| (StatementDesigAssign) DesignatorStatementAssign:D1 {: RESULT=new StatementDesigAssign(D1); RESULT.setLine(D1left); :}
+			| (StatementIfElse) IfBegin:I1 SafeIfElseCondition:c Statement:S2 ElseBegin:E3 Statement:S4 {: RESULT=new StatementIfElse(I1, c, S2, E3, S4); RESULT.setLine(I1left); :}
+			| (StatementIfNoElse) IfBegin:I1 SafeIfElseCondition:c Statement:S2 {: RESULT=new StatementIfNoElse(I1, c, S2); RESULT.setLine(I1left); :}
+			| (StatementBreak) BREAK SEMI {: RESULT=new StatementBreak(); :}
+			| (StatementContinue) CONTINUE SEMI {: RESULT=new StatementContinue(); :}
+			| (StatementReturnExpr) RETURN Expr:e SEMI {: RESULT=new StatementReturnExpr(e); RESULT.setLine(eleft); :}
+			| (StatementReturnNoExpr) RETURN SEMI {: RESULT=new StatementReturnNoExpr(); :}
+			| (StatementRead) READ LPAREN Designator:d RPAREN SEMI {: RESULT=new StatementRead(d); RESULT.setLine(dleft); :}
+			| (StatementPrintConstArg) PRINT LPAREN Expr:e COMMA NUMBER:width RPAREN SEMI {: RESULT=new StatementPrintConstArg(e, width); RESULT.setLine(eleft); :}
+			| (StatementPrintNoArg) PRINT LPAREN Expr:e RPAREN SEMI {: RESULT=new StatementPrintNoArg(e); RESULT.setLine(eleft); :}
+
+			| (StatementForHasCond2) ForLoopStart:F1 LPAREN SafeDesignatorStatementListSemi:S2
+				ForLoopConditionBegin:F3 CondFact:C4 ForLoopConditionEnd:F5 SEMI
+			  	ForLoopPostStmntBegin:F6 OptDesignatorStatementList:O7 ForLoopPostStmntEnd:F8 RPAREN
+				ForLoopBodyBegin:F9 Statement:S10 ForLoopBodyEnd:F11 {: RESULT=new StatementForHasCond2(F1, S2, F3, C4, F5, F6, O7, F8, F9, S10, F11); RESULT.setLine(F1left); :}
+
+			| (StatementForNoCond1) ForLoopStart:F1 LPAREN SafeDesignatorStatementListSemi:S2
+				ForLoopConditionBegin:F3 ForLoopConditionEnd:F4 SEMI
+			  	ForLoopPostStmntBegin:F5 OptDesignatorStatementList:O6 ForLoopPostStmntEnd:F7 RPAREN
+				ForLoopBodyBegin:F8 Statement:S9 ForLoopBodyEnd:F10 {: RESULT=new StatementForNoCond1(F1, S2, F3, F4, F5, O6, F7, F8, S9, F10); RESULT.setLine(F1left); :}
+
+			| (StatementForHasCond4) ForLoopStart:F1 LPAREN SEMI
+				ForLoopConditionBegin:F2 CondFact:C3 ForLoopConditionEnd:F4 SEMI
+			  	ForLoopPostStmntBegin:F5 OptDesignatorStatementList:O6 ForLoopPostStmntEnd:F7 RPAREN
+				ForLoopBodyBegin:F8 Statement:S9 ForLoopBodyEnd:F10 {: RESULT=new StatementForHasCond4(F1, F2, C3, F4, F5, O6, F7, F8, S9, F10); RESULT.setLine(F1left); :}
+
+			| (StatementForNoCond3) ForLoopStart:F1 LPAREN SEMI
+				ForLoopConditionBegin:F2 ForLoopConditionEnd:F3 SEMI
+			  	ForLoopPostStmntBegin:F4 OptDesignatorStatementList:O5 ForLoopPostStmntEnd:F6 RPAREN
+				ForLoopBodyBegin:F7 Statement:S8 ForLoopBodyEnd:F9 {: RESULT=new StatementForNoCond3(F1, F2, F3, F4, O5, F6, F7, S8, F9); RESULT.setLine(F1left); :}
+
+			| (StatementBlock) LBRACE StatementList:S1 RBRACE {: RESULT=new StatementBlock(S1); RESULT.setLine(S1left); :}
+			;
+
+StatementList ::= (HasStatementList) StatementList:S1 Statement:S2 {: RESULT=new HasStatementList(S1, S2); RESULT.setLine(S1left); :}
+				| (NoStatementList) {: RESULT=new NoStatementList(); :}
+				;
+
+OptDesignatorStatementList ::= (HasOptDesignatorStatementList) DesignatorStatementList:D1 {: RESULT=new HasOptDesignatorStatementList(D1); RESULT.setLine(D1left); :}
+						  | (NoOptDesignatorStatementList) {: RESULT=new NoOptDesignatorStatementList(); :}  // epsilon
+						  ;
+
+DesignatorStatementList ::= (MultipleDesignatorStatementList)
+							DesignatorStatementList:D1 COMMA DesignatorStatement:D2 {: RESULT=new MultipleDesignatorStatementList(D1, D2); RESULT.setLine(D1left); :}
+						  | (MultipleDesignatorStatementListAssign)
+							DesignatorStatementList:D1 COMMA DesignatorStatementAssignNoSemi:D2 {: RESULT=new MultipleDesignatorStatementListAssign(D1, D2); RESULT.setLine(D1left); :}
+						  | (SingleDesignatorStatementList) DesignatorStatement:D1 {: RESULT=new SingleDesignatorStatementList(D1); RESULT.setLine(D1left); :}
+						  | (SingleDesignatorStatementListAssign) DesignatorStatementAssignNoSemi:D1 {: RESULT=new SingleDesignatorStatementListAssign(D1); RESULT.setLine(D1left); :}
+						  ;
+
+SafeDesignatorStatementListSemi ::= (HasSafeDesignatorStatementListSemi) DesignatorStatementListSemi:D1 SEMI {: RESULT=new HasSafeDesignatorStatementListSemi(D1); RESULT.setLine(D1left); :}
+								 | (ErrSafeDesignatorStatementListSemi) Designator:D1 Assignop:A2 error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:} {: RESULT=new ErrSafeDesignatorStatementListSemi(D1, A2); RESULT.setLine(D1left); :}
+/*
+								 | (ErrSafeDesignatorStatementListSemi4) error Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi4 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+
+								 | (ErrSafeDesignatorStatementListSemi3) Designator Assignop error SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi3 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+								 | (ErrSafeDesignatorStatementListSemi2) error Assignop SEMI:l
+									{:
+										parser.report_error(
+											"ErrSafeDesignatorStatementListSemi2 recovery on first semicolon. Assignment syntax error on line "
+											+ lleft,
+											null
+										);
+									:}
+*/
+								 ;
+
+DesignatorStatementListSemi ::= (MultipleDesignatorStatementListSemi) 
+								DesignatorStatementListSemi:D1 COMMA DesignatorStatement:D2 {: RESULT=new MultipleDesignatorStatementListSemi(D1, D2); RESULT.setLine(D1left); :}
+							  | (MultipleDesignatorStatementListAssignSemi)
+								DesignatorStatementListSemi:D1 COMMA DesignatorAssign:D2 {: RESULT=new MultipleDesignatorStatementListAssignSemi(D1, D2); RESULT.setLine(D1left); :}
+							  | (SingleDesignatorStatementListSemi) DesignatorStatement:D1 {: RESULT=new SingleDesignatorStatementListSemi(D1); RESULT.setLine(D1left); :}
+							  | (SingleDesignatorStatementListAssignSemi) DesignatorAssign:D1 {: RESULT=new SingleDesignatorStatementListAssignSemi(D1); RESULT.setLine(D1left); :}
+							  ;
+
+
+// ===========================================================================
+// Dependencies Group #3
+
+
+ActPars ::= (MultipleActPars) ActPars:A1 COMMA Expr:e {: RESULT=new MultipleActPars(A1, e); RESULT.setLine(A1left); :}
+		  | (SingleActPar) Expr:e {: RESULT=new SingleActPar(e); RESULT.setLine(eleft); :}
+		  ;
+
+FactorPars ::= (FactorParsActPars) LPAREN ActPars:A1 RPAREN {: RESULT=new FactorParsActPars(A1); RESULT.setLine(A1left); :}
+			 | (FactorParsNoActPars) LPAREN RPAREN {: RESULT=new FactorParsNoActPars(); :}
+			 ;
+
+FuncCall ::= (FuncCall) Designator:d FactorPars:F1 {: RESULT=new FuncCall(d, F1); RESULT.setLine(dleft); :};
+
+Factor ::= (FactorDesignatorFactorPars) FuncCall:f {: RESULT=new FactorDesignatorFactorPars(f); RESULT.setLine(fleft); :}
+		 | (FactorDesignatorNoFactorPars) Designator:d {: RESULT=new FactorDesignatorNoFactorPars(d); RESULT.setLine(dleft); :}
+		 | (FactorNumber) NUMBER:value {: RESULT=new FactorNumber(value); RESULT.setLine(valueleft); :}
+		 | (FactorChar) CHAR:value {: RESULT=new FactorChar(value); RESULT.setLine(valueleft); :}
+		 | (FactorBool) BOOL:value {: RESULT=new FactorBool(value); RESULT.setLine(valueleft); :}
+		 | (FactorNewExpr) NEW Type:t LBRACKET Expr:e RBRACKET {: RESULT=new FactorNewExpr(t, e); RESULT.setLine(tleft); :}
+		 | (FactorNewFactorPars) NEW Type:t FactorPars:F1 {: RESULT=new FactorNewFactorPars(t, F1); RESULT.setLine(tleft); :}
+		 | (FactorLparen) LPAREN Expr:e RPAREN {: RESULT=new FactorLparen(e); RESULT.setLine(eleft); :}
+		 ;
+
+MulopFactorList ::= (HasMulopFactorList) MulopFactorList:M1 Mulop:M2 Factor:f {: RESULT=new HasMulopFactorList(M1, M2, f); RESULT.setLine(M1left); :}
+				  | (SingleMulopFactor) Mulop:M1 Factor:f {: RESULT=new SingleMulopFactor(M1, f); RESULT.setLine(M1left); :}
+				  ;
+
+Term ::= (TermFactor) Factor:f {: RESULT=new TermFactor(f); RESULT.setLine(fleft); :}
+	   | (TermMulopFactorList) Factor:f MulopFactorList:m {: RESULT=new TermMulopFactorList(f, m); RESULT.setLine(fleft); :}
+	   ;
+
+AddopTermList ::= (HasAddopTermList) AddopTermList:A1 Addop:A2 Term:t {: RESULT=new HasAddopTermList(A1, A2, t); RESULT.setLine(A1left); :}
+				| (NoAddopTerm) {: RESULT=new NoAddopTerm(); :}  // epsilon
+				;
+
+Expr ::= (ExprMinus) ExprNegation:E1 AddopTermList:a {: RESULT=new ExprMinus(E1, a); RESULT.setLine(E1left); :}
+	   | (ExprNoMinus) Term:t AddopTermList:a {: RESULT=new ExprNoMinus(t, a); RESULT.setLine(tleft); :}
+	   ;
+
+ExprNegation ::= (ExprNegation) MINUS Term:t {: RESULT=new ExprNegation(t); RESULT.setLine(tleft); :};
+
+
+
+// ===========================================================================
+// Dependencies Group #4
+
+/*
+
+DesignatorStatement ::= (DesignatorStatementMisc) Designator DesignatorDetail
+					  | (DesignatorStatementMul) LBRACKET OptDesignatorList
+					  	MULTIPLY Designator RBRACKET EQUAL Designator
+					  ;
+
+DesignatorDetail ::= (DesignatorDetailExpr) Assignop Expr
+				   | (DesignatorDetailFactorPars) FactorPars
+				   | (DesignatorDetailFactorIncr) INCR
+				   | (DesignatorDetailFactorDecr) DECR
+				   ;
+*/
+
+DesignatorStatement ::= (DesignatorStatementFuncCall) FuncCall:F1 {: RESULT=new DesignatorStatementFuncCall(F1); RESULT.setLine(F1left); :}
+					  | (DesignatorStatementMisc) Designator:d DesignatorDetail:D1 {: RESULT=new DesignatorStatementMisc(d, D1); RESULT.setLine(dleft); :}
+					  ;
+
+DesignatorDetail ::= (DesignatorDetailFactorIncr) INCR {: RESULT=new DesignatorDetailFactorIncr(); :}
+				   | (DesignatorDetailFactorDecr) DECR {: RESULT=new DesignatorDetailFactorDecr(); :}
+				   ;
+
+OptDesignatorList ::= (HasOptDesignatorList) OptDesignatorList:O1 OptDesignator:d COMMA {: RESULT=new HasOptDesignatorList(O1, d); RESULT.setLine(O1left); :}
+					| (NoDesignatorList) {: RESULT=new NoDesignatorList(); :}  // epsilon
+					;
+
+OptDesignator ::= (HasOptDesignator) Designator:d {: RESULT=new HasOptDesignator(d); RESULT.setLine(dleft); :}
+				| (NoDesignator) {: RESULT=new NoDesignator(); :}  // epsilon
+				;
+
+Designator ::= (NamespacedDesignator) IDENT:namespaceName COLON COLON IDENT:identName DesignatorDetailList:d {: RESULT=new NamespacedDesignator(namespaceName, identName, d); RESULT.setLine(namespaceNameleft); :}
+			 | (NoNamespaceDesignator) IDENT:identName DesignatorDetailList:d {: RESULT=new NoNamespaceDesignator(identName, d); RESULT.setLine(identNameleft); :}
+			 ;
+
+DesignatorDetailList ::= (FirstDesignatorDetailList) DesignatorDetailList:D1 DOT IDENT:I2 {: RESULT=new FirstDesignatorDetailList(D1, I2); RESULT.setLine(D1left); :}
+					   | (SecondDesignatorDetailList) DesignatorDetailList:D1 LBRACKET Expr:e RBRACKET {: RESULT=new SecondDesignatorDetailList(D1, e); RESULT.setLine(D1left); :}
+					   | (NoDesignatorDetailList) {: RESULT=new NoDesignatorDetailList(); :}  // epsilon
+					   ;
+
+
+// ===========================================================================
+// Dependencies Group #5
+
+
+Condition ::= (Condition) CondTerm:c OrCondTermList:O1 {: RESULT=new Condition(c, O1); RESULT.setLine(cleft); :};
+
+ConditionalOR ::= (ConditionalOR) OR {: RESULT=new ConditionalOR(); :};
+
+OrCondTermList ::= (HasOrCondTermList) OrCondTermList:O1 ConditionalOR:C2 CondTerm:C3 {: RESULT=new HasOrCondTermList(O1, C2, C3); RESULT.setLine(O1left); :}
+				 | (NoCondTermList) {: RESULT=new NoCondTermList(); :}  // epsilon
+				 ;
+
+CondTerm ::= (CondTerm) CondFact:c AndCondFactList:A1 {: RESULT=new CondTerm(c, A1); RESULT.setLine(cleft); :};
+
+AndCondFactList ::= (HasAndCondFactList) AndCondFactList:A1 AND CondFact:C2 {: RESULT=new HasAndCondFactList(A1, C2); RESULT.setLine(A1left); :}
+				  | (NoAndCondFactList) {: RESULT=new NoAndCondFactList(); :}  // epsilon
+				  ;
+
+CondFact ::= (CondFactExpr) Expr:e {: RESULT=new CondFactExpr(e); RESULT.setLine(eleft); :}
+		   | (CondFactRelop) Expr:e1 Relop:R1 Expr:e2 {: RESULT=new CondFactRelop(e1, R1, e2); RESULT.setLine(e1left); :}
+		   ;
+
+
+// ===========================================================================
+// Dependencies Group #6
+
+
+MethodDeclList ::= (HasMethodDeclList) MethodDeclList:M1 MethodDecl:M2 {: RESULT=new HasMethodDeclList(M1, M2); RESULT.setLine(M1left); :}
+				 | (NoMethodDeclList) {: RESULT=new NoMethodDeclList(); :}  // epsilon
+				 ;
+
+/*
+MethodDecl ::= (MethodDeclFormPars) TypeOrVoidMethodName IDENT LPAREN FormPars RPAREN
+				SafeVarDeclList LBRACE StatementList RBRACE
+			 | (MethodDeclNoFormPars) TypeOrVoidMethodName IDENT LPAREN RPAREN
+				SafeVarDeclList LBRACE StatementList RBRACE
+			 ;
+*/
+
+MethodDecl ::= (MethodDeclFormPars) TypeOrVoidMethodName:t LPAREN FormPars:f RPAREN
+				VarDeclList:V1 LBRACE StatementList:S2 RBRACE {: RESULT=new MethodDeclFormPars(t, f, V1, S2); RESULT.setLine(tleft); :}
+			 | (MethodDeclNoFormPars) TypeOrVoidMethodName:t LPAREN RPAREN
+				VarDeclList:V1 LBRACE StatementList:S2 RBRACE {: RESULT=new MethodDeclNoFormPars(t, V1, S2); RESULT.setLine(tleft); :}
+			 ;
+
+TypeOrVoidMethodName ::= (TypeOrVoidMethodNameIsType) Type:typeName IDENT:methodName {: RESULT=new TypeOrVoidMethodNameIsType(typeName, methodName); RESULT.setLine(typeNameleft); :}
+					   | (TypeOrVoidMethodNameIsVoid) VOID:typeName IDENT:methodName {: RESULT=new TypeOrVoidMethodNameIsVoid(methodName); RESULT.setLine(methodNameleft); :}
+					   ;

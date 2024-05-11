@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MJCompiler" default="compile" basedir=".">
+
+	<property name="src.dir" location="src/rs/ac/bg/etf/pp1" />
+	<property name="bin.dir" location="bin" />
+	<property name="spec.dir" location="spec" />
+	<property name="lib.dir" location="lib" />
+
+	<target name="compile" >
+		<mkdir dir="${bin.dir}" />
+		<javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false">
+			<classpath>
+				<pathelement path="${lib.dir}/JFlex.jar" />
+				<pathelement path="${lib.dir}/cup_v10k.jar" />
+				<pathelement path="${lib.dir}/log4j-1.2.17.jar" />
+				<pathelement path="${lib.dir}/symboltable-1-1.jar" />
+				<pathelement path="${lib.dir}/mj-runtime-1.1.jar" />
+			</classpath>
+		</javac>
+	</target>
+
+</project>

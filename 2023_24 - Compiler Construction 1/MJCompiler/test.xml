@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="MJCompiler" default="runObj" basedir=".">
+
+	<property name="lib.dir" location="lib" />
+	<property name="test.dir" location="test" />
+
+	<target name="disasmObj">
+		<java classname="rs.etf.pp1.mj.runtime.disasm">
+			<arg value="${test.dir}/program.obj" />
+			<classpath>
+				<pathelement location="${lib.dir}/mj-runtime-1.1.jar" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="runObj" depends="disasmObj" >
+		<java classname="rs.etf.pp1.mj.runtime.Run">
+			<arg value="${test.dir}/program.obj" />
+            <redirector input="${test.dir}/input.txt" />
+			<classpath>
+				<pathelement location="${lib.dir}/mj-runtime-1.1.jar" />
+			</classpath>
+		</java>
+	</target>
+
+</project>
