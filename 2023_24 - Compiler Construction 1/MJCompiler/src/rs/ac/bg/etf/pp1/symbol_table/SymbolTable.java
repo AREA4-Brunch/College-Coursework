@@ -280,16 +280,16 @@ public class SymbolTable {
         return this.cur_namespace.name;
     }
 
-	private void report_error(final String message, final SyntaxNode info) {
-		// this.error_detected = true;
-		final StringBuilder msg = new StringBuilder(message);
-		final int line = (info == null) ? 0 : info.getLine();
-		if (line != 0) {
-			msg.append(" on line ").append(line);
+    private void report_error(final String message, final SyntaxNode info) {
+        // this.error_detected = true;
+        final StringBuilder msg = new StringBuilder(message);
+        final int line = (info == null) ? 0 : info.getLine();
+        if (line != 0) {
+            msg.append(" on line ").append(line);
         }
-		// this.logger.error(msg.toString());
+        // this.logger.error(msg.toString());
         System.err.println(msg.toString());
-	}
+    }
 
     public boolean areCompatibleTypes(Struct type1, Struct type2) {
         // if both arr also checks elem types

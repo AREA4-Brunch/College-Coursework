@@ -21,10 +21,10 @@ public class Compiler {
     private static Compiler instance = null;
     private SymbolTable symbol_table = SymbolTable.getInstance();
 
-	static {
-		DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
-		Log4JUtils.instance().prepareLogFile(Logger.getRootLogger());
-	}
+    static {
+        DOMConfigurator.configure(Log4JUtils.instance().findLoggerConfigFile());
+        Log4JUtils.instance().prepareLogFile(Logger.getRootLogger());
+    }
 
     public static Compiler getInstance() {
         if (Compiler.instance == null) {
@@ -34,7 +34,7 @@ public class Compiler {
     }
 
     public static void main(String[] args) {
-		final Logger logger = Logger.getLogger(Compiler.class);
+        final Logger logger = Logger.getLogger(Compiler.class);
 
         /// called with args: test/program.mj test/program.obj
         if (args.length < 2) {
@@ -44,11 +44,11 @@ public class Compiler {
 
         final File sourceCode = new File(args[0]);
 
-		if (!sourceCode.exists()) {
-			// logger.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
+        if (!sourceCode.exists()) {
+            // logger.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
             logger.error("Source file [" + sourceCode.getAbsolutePath() + "] not found!");
-			return;
-		}
+            return;
+        }
 
         final int max_src_file_size = 8 * 1024;  // 8KB
         if (sourceCode.length() > max_src_file_size) {
@@ -76,15 +76,15 @@ public class Compiler {
             logger.error("Failed to redirect sys err stream to file.");
         }
 
-		logger.info("Compiling source file: " + sourceCode.getAbsolutePath());
+        logger.info("Compiling source file: " + sourceCode.getAbsolutePath());
 
-		try (BufferedReader br = new BufferedReader(new FileReader(sourceCode))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(sourceCode))) {
             final Yylex lexer = new Yylex(br);  // for lexic analysis
-			final MJParser parser = new MJParser(lexer);  // for syntax analysis
+            final MJParser parser = new MJParser(lexer);  // for syntax analysis
             // Lexic and Syntax analysis executed on parser.parse()
-			final Symbol prog_token = parser.parse();
+            final Symbol prog_token = parser.parse();
 
-			if (prog_token == null) {
+            if (prog_token == null) {
                 throw new RuntimeException("Failed to parse, token == null, nonterminal Program was never recognized.");
             }
 

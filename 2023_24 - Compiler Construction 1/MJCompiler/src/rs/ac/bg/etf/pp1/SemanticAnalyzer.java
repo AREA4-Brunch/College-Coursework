@@ -15,14 +15,14 @@ import rs.etf.pp1.symboltable.visitors.SymbolTableVisitor;
 
 public class SemanticAnalyzer extends VisitorAdaptor {
 
-	private boolean error_detected = false;
-	private int cnt_global_vars_or_fields = 0;
+    private boolean error_detected = false;
+    private int cnt_global_vars_or_fields = 0;
     private int cnt_global_variables = 0;
     private int cnt_local_variables = 0;
     private final int max_cnt_local_variables = 256 - 1;  // inclusive
     private final int max_cnt_global_variables = 65536 - 1;  // inclusive
     private SymbolTable symbol_table = null;
-	private final Logger logger = Logger.getLogger(this.getClass());
+    private final Logger logger = Logger.getLogger(this.getClass());
 
     private static class CurConstDecl {
         public ConstAssignmentList constant;
@@ -135,7 +135,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     private List<CurUnpackingDesignator> cur_unpacking_desig_list = new ArrayList<>();
 
 
-	// ===========================================================
+    // ===========================================================
     // Constructors:
 
 
@@ -144,7 +144,7 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     }
 
 
-	// ===========================================================
+    // ===========================================================
     // Getters:
 
 
@@ -153,31 +153,31 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     }
 
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Errors:
 
 
-	public void report_error(final String message, final SyntaxNode info) {
-		this.error_detected = true;
-		final StringBuilder msg = new StringBuilder(message);
-		final int line = (info == null) ? 0 : info.getLine();
-		if (line != 0) {
-			msg.append(" on line ").append(line);
+    public void report_error(final String message, final SyntaxNode info) {
+        this.error_detected = true;
+        final StringBuilder msg = new StringBuilder(message);
+        final int line = (info == null) ? 0 : info.getLine();
+        if (line != 0) {
+            msg.append(" on line ").append(line);
         }
-		this.logger.error(msg.toString());
+        this.logger.error(msg.toString());
         // System.err.println(msg.toString());
-	}
+    }
 
-	public void report_info(final String message, final SyntaxNode info) {
-		final StringBuilder msg = new StringBuilder(message);
-		final int line = (info == null) ? 0 : info.getLine();
-		if (line != 0) {
-			msg.append(" on line ").append(line);
+    public void report_info(final String message, final SyntaxNode info) {
+        final StringBuilder msg = new StringBuilder(message);
+        final int line = (info == null) ? 0 : info.getLine();
+        if (line != 0) {
+            msg.append(" on line ").append(line);
         }
-		this.logger.info(msg.toString());
+        this.logger.info(msg.toString());
         // System.out.println(msg.toString());
-	}
+    }
 
     public void report_registered_identifier(Obj identifier, SyntaxNode node) {
         SymbolTableVisitor sym_table_visitor = this.symbol_table.createVisitor();
@@ -202,30 +202,30 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         );
     }
 
-	public boolean wasErrorDetected() {
-		return this.error_detected;
-	}
+    public boolean wasErrorDetected() {
+        return this.error_detected;
+    }
 
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Scopes:
 
 
-	// ===========================================================
-	// nonterminal Program
+    // ===========================================================
+    // nonterminal Program
 
-	@Override
-	public void visit(final ProgramNamespace program) {
+    @Override
+    public void visit(final ProgramNamespace program) {
         super.visit(program);
         this.commonVisit(program, program.getProgName().obj);
-	}
+    }
 
-	@Override
-	public void visit(final ProgramNoNamespace program) {
+    @Override
+    public void visit(final ProgramNoNamespace program) {
         super.visit(program);
         this.commonVisit(program, program.getProgName().obj);
-	}
+    }
 
     private void commonVisit(Program program, Obj name_obj) {
         if (this.cnt_global_variables > this.max_cnt_global_variables) {
@@ -236,9 +236,9 @@ public class SemanticAnalyzer extends VisitorAdaptor {
             );
         }
 
-		Tab.chainLocalSymbols(name_obj);
+        Tab.chainLocalSymbols(name_obj);
 
-		this.cnt_global_vars_or_fields = Tab.currentScope.getnVars();
+        this.cnt_global_vars_or_fields = Tab.currentScope.getnVars();
         // safety check if counted as many global vars as the Tab class:
         if (!this.error_detected && this.cnt_global_vars_or_fields != this.cnt_global_variables) {
             report_error(
@@ -261,43 +261,43 @@ public class SemanticAnalyzer extends VisitorAdaptor {
         this.symbol_table.closeScope();
     }
 
-	@Override
-	public void visit(final ProgName progName) {
+    @Override
+    public void visit(final ProgName progName) {
         super.visit(progName);
-		progName.obj = this.symbol_table.registerName(
+        progName.obj = this.symbol_table.registerName(
             Obj.Prog,
             null,
             progName.getProgName(),
             Tab.noType
         );
-		this.symbol_table.openScope();
-	}
-
-
-	// ===========================================================
-	// nonterminal Namespace
-
-	@Override
-	public void visit(final Namespace namespace) {
-        super.visit(namespace);
-        // Tab.chainLocalSymbols(namespace.getNamespaceName().obj);
-        this.symbol_table.closeNamespace();
-		// this.symbol_table.closeScope();
-	}
-
-	@Override
-	public void visit(final NamespaceName namespace_name) {
-        super.visit(namespace_name);
-        String name = namespace_name.getIdentNamespaceName();
-        // namespace_name.obj = this.symbol_table.registerName(Obj.NO_VALUE, null, name, new Struct(Struct.None));
-		// this.symbol_table.openScope();
-        // this.cur_namespace = new CurNamespaceName(namespace_name, Tab.currentScope());
-        this.symbol_table.openNamespace(name);
-	}
+        this.symbol_table.openScope();
+    }
 
 
     // ===========================================================
-	// nonterminal MethodDecl
+    // nonterminal Namespace
+
+    @Override
+    public void visit(final Namespace namespace) {
+        super.visit(namespace);
+        // Tab.chainLocalSymbols(namespace.getNamespaceName().obj);
+        this.symbol_table.closeNamespace();
+        // this.symbol_table.closeScope();
+    }
+
+    @Override
+    public void visit(final NamespaceName namespace_name) {
+        super.visit(namespace_name);
+        String name = namespace_name.getIdentNamespaceName();
+        // namespace_name.obj = this.symbol_table.registerName(Obj.NO_VALUE, null, name, new Struct(Struct.None));
+        // this.symbol_table.openScope();
+        // this.cur_namespace = new CurNamespaceName(namespace_name, Tab.currentScope());
+        this.symbol_table.openNamespace(name);
+    }
+
+
+    // ===========================================================
+    // nonterminal MethodDecl
 
     @Override
     public void visit(TypeOrVoidMethodNameIsType method_name) {
@@ -447,12 +447,12 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Scopes
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
-	// nonterminal Type
+    // ===========================================================
+    // nonterminal Type
 
     @Override
     public void visit(NamespacedType type) {
@@ -486,12 +486,12 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     }
 
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Constants:
 
-	// ===========================================================
-	// nonterminal ConstDecl
+    // ===========================================================
+    // nonterminal ConstDecl
 
 
     @Override
@@ -593,17 +593,17 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Constants
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Global Variables:
 
 
-	// ===========================================================
-	// nonterminal SafeVarDecl
+    // ===========================================================
+    // nonterminal SafeVarDecl
 
     @Override
     public void visit(SafeMultipleArrayIdentifier variable) {
@@ -678,8 +678,8 @@ public class SemanticAnalyzer extends VisitorAdaptor {
     }
 
 
-	// ===========================================================
-	// nonterminal VarDecl - local variables
+    // ===========================================================
+    // nonterminal VarDecl - local variables
 
 
     @Override
@@ -756,12 +756,12 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Global Variables
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Accessing Registered Names:
 
 
@@ -854,17 +854,17 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Accessing Registered Names
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     
 
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
     // Veryfying Context Rules/Conditions
 
 
 
-	// ===========================================================
+    // ===========================================================
     // Verify Function Calls:
 
 
@@ -1164,10 +1164,10 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Verify Function Calls
-	// ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
+    // ===========================================================
     // Verify Return in method:
 
 
@@ -1202,9 +1202,9 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Verify Return in method
-	// ===========================================================
+    // ===========================================================
 
-	// ===========================================================
+    // ===========================================================
     // Verify Designator Assignment:
 
 
@@ -1327,10 +1327,10 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Verify Designator Assignment
-	// ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
+    // ===========================================================
     // Verify READ, PRINT:
 
 
@@ -1390,10 +1390,10 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // Verify READ, PRINT
-	// ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
+    // ===========================================================
     // CondFact:
 
 
@@ -1482,10 +1482,10 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // CondFact
-	// ===========================================================
+    // ===========================================================
 
 
-	// ===========================================================
+    // ===========================================================
     // For loop:
 
 
@@ -1547,9 +1547,9 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // For loop
-	// ===========================================================
+    // ===========================================================
 
-	// ===========================================================
+    // ===========================================================
     // If Statement:
 
 
@@ -1599,11 +1599,11 @@ public class SemanticAnalyzer extends VisitorAdaptor {
 
 
     // If Statement
-	// ===========================================================
+    // ===========================================================
 
 
     // Veryfying Context Rules/Conditions
-	// ===========================================================
-	// ===========================================================
+    // ===========================================================
+    // ===========================================================
 
 }
